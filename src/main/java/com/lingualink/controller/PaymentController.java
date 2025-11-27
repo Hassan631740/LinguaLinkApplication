@@ -1,7 +1,9 @@
 package com.lingualink.controller;
 
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Payment;
 import com.lingualink.service.PaymentService;
+import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,11 +11,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -41,9 +46,33 @@ public class PaymentController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all payments", description = "Retrieves a list of all payments")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved list of payments")
-    public ResponseEntity<List<Payment>> getAllPayments() {
+    @Operation(summary = "Get all payments", description = "Retrieves a paginated list of all payments with optional filtering")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of payments")
+    })
+    public ResponseEntity<?> getAllPayments(
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir,
+            @Parameter(description = "Filter by booking ID") @RequestParam(required = false) Long bookingId,
+            @Parameter(description = "Filter by status") @RequestParam(required = false) String status,
+            @Parameter(description = "Filter by currency") @RequestParam(required = false) String currency,
+            @Parameter(description = "Filter by payment method") @RequestParam(required = false) String method,
+            @Parameter(description = "Filter by minimum amount") @RequestParam(required = false) BigDecimal minAmount,
+            @Parameter(description = "Filter by maximum amount") @RequestParam(required = false) BigDecimal maxAmount,
+            @Parameter(description = "Filter by paid date from (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime paidFrom,
+            @Parameter(description = "Filter by paid date to (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime paidTo) {
+        
+        if (page != null || size != null || bookingId != null || status != null || 
+            currency != null || method != null || minAmount != null || maxAmount != null || 
+            paidFrom != null || paidTo != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Payment> pagedResponse = paymentService.getAllPaymentsWithFilters(
+                    pageParams, bookingId, status, currency, method, minAmount, maxAmount, paidFrom, paidTo);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Payment> payments = paymentService.getAllPayments();
         return ResponseEntity.ok(payments);
     }
@@ -61,19 +90,41 @@ public class PaymentController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    @Operation(summary = "Get payments by booking ID", description = "Retrieves all payments for a specific booking")
+    @Operation(summary = "Get payments by booking ID", description = "Retrieves all payments for a specific booking with optional pagination")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved payments")
-    public ResponseEntity<List<Payment>> getPaymentsByBookingId(
-            @Parameter(description = "Booking ID") @PathVariable Long bookingId) {
+    public ResponseEntity<?> getPaymentsByBookingId(
+            @Parameter(description = "Booking ID") @PathVariable Long bookingId,
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir) {
+        
+        if (page != null || size != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Payment> pagedResponse = paymentService.getPaymentsByBookingId(bookingId, pageParams);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Payment> payments = paymentService.getPaymentsByBookingId(bookingId);
         return ResponseEntity.ok(payments);
     }
 
     @GetMapping("/status/{status}")
-    @Operation(summary = "Get payments by status", description = "Retrieves all payments with a specific status")
+    @Operation(summary = "Get payments by status", description = "Retrieves all payments with a specific status with optional pagination")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved payments")
-    public ResponseEntity<List<Payment>> getPaymentsByStatus(
-            @Parameter(description = "Payment status") @PathVariable String status) {
+    public ResponseEntity<?> getPaymentsByStatus(
+            @Parameter(description = "Payment status") @PathVariable String status,
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir) {
+        
+        if (page != null || size != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Payment> pagedResponse = paymentService.getPaymentsByStatus(status, pageParams);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Payment> payments = paymentService.getPaymentsByStatus(status);
         return ResponseEntity.ok(payments);
     }

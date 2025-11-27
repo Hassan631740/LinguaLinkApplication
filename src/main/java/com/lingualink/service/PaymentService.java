@@ -1,11 +1,17 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Payment;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.PaymentRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,6 +35,24 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Payment> getAllPayments(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("paidAt");
+        Page<Payment> page = paymentRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Payment> getAllPaymentsWithFilters(PageParams pageParams, Long bookingId, String status, 
+                                                             String currency, String method,
+                                                             BigDecimal minAmount, BigDecimal maxAmount,
+                                                             LocalDateTime paidFrom, LocalDateTime paidTo) {
+        Pageable pageable = pageParams.toPageable("paidAt");
+        Page<Payment> page = paymentRepository.findByFilters(bookingId, status, currency, method, 
+                                                               minAmount, maxAmount, paidFrom, paidTo, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public Payment getPaymentById(Long id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Payment", "id", id));
@@ -40,8 +64,22 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Payment> getPaymentsByBookingId(Long bookingId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("paidAt");
+        Page<Payment> page = paymentRepository.findByBooking_Id(bookingId, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public List<Payment> getPaymentsByStatus(String status) {
         return paymentRepository.findByStatus(status);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Payment> getPaymentsByStatus(String status, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("paidAt");
+        Page<Payment> page = paymentRepository.findByStatus(status, pageable);
+        return PagedResponse.of(page);
     }
 
     // Update - Full update

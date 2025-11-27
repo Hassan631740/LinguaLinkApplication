@@ -1,13 +1,18 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Event;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.EventRepository;
 import com.lingualink.security.SecurityUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,6 +37,23 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Event> getAllEvents(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("id");
+        Page<Event> page = eventRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Event> getAllEventsWithFilters(PageParams pageParams, Long organizerId, String language, 
+                                                         String title, String location, 
+                                                         LocalDateTime startDateFrom, LocalDateTime startDateTo) {
+        Pageable pageable = pageParams.toPageable("startDatetime");
+        Page<Event> page = eventRepository.findByFilters(organizerId, language, title, location, 
+                                                          startDateFrom, startDateTo, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public Event getEventById(Long id) {
         return eventRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", id));
@@ -43,8 +65,22 @@ public class EventService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Event> getEventsByOrganizerId(Long organizerId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("startDatetime");
+        Page<Event> page = eventRepository.findByOrganizer_Id(organizerId, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public List<Event> getEventsByLanguage(String language) {
         return eventRepository.findByLanguage(language);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Event> getEventsByLanguage(String language, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("startDatetime");
+        Page<Event> page = eventRepository.findByLanguage(language, pageable);
+        return PagedResponse.of(page);
     }
 
     // Update - Full update

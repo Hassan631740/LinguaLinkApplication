@@ -1,7 +1,9 @@
 package com.lingualink.controller;
 
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Interpreter;
 import com.lingualink.service.InterpreterService;
+import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,9 +45,29 @@ public class InterpreterController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all interpreters", description = "Retrieves a list of all interpreters")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved list of interpreters")
-    public ResponseEntity<List<Interpreter>> getAllInterpreters() {
+    @Operation(summary = "Get all interpreters", description = "Retrieves a paginated list of all interpreters with optional filtering")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of interpreters")
+    })
+    public ResponseEntity<?> getAllInterpreters(
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir,
+            @Parameter(description = "Filter by language") @RequestParam(required = false) String language,
+            @Parameter(description = "Filter by minimum rate per hour") @RequestParam(required = false) BigDecimal minRate,
+            @Parameter(description = "Filter by maximum rate per hour") @RequestParam(required = false) BigDecimal maxRate,
+            @Parameter(description = "Filter by minimum experience years") @RequestParam(required = false) Integer minExperience,
+            @Parameter(description = "Filter by maximum experience years") @RequestParam(required = false) Integer maxExperience) {
+        
+        if (page != null || size != null || language != null || minRate != null || 
+            maxRate != null || minExperience != null || maxExperience != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Interpreter> pagedResponse = interpreterService.getAllInterpretersWithFilters(
+                    pageParams, language, minRate, maxRate, minExperience, maxExperience);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Interpreter> interpreters = interpreterService.getAllInterpreters();
         return ResponseEntity.ok(interpreters);
     }

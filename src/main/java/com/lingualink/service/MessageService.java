@@ -1,11 +1,16 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Message;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.MessageRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -29,6 +34,23 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Message> getAllMessages(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("sentAt");
+        Page<Message> page = messageRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Message> getAllMessagesWithFilters(PageParams pageParams, Long bookingId, Long senderId, 
+                                                             Long receiverId, String content,
+                                                             LocalDateTime sentFrom, LocalDateTime sentTo) {
+        Pageable pageable = pageParams.toPageable("sentAt");
+        Page<Message> page = messageRepository.findByFilters(bookingId, senderId, receiverId, content, 
+                                                              sentFrom, sentTo, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public Message getMessageById(Long id) {
         return messageRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Message", "id", id));
@@ -40,8 +62,22 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Message> getMessagesByBookingId(Long bookingId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("sentAt");
+        Page<Message> page = messageRepository.findByBooking_Id(bookingId, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public List<Message> getMessagesBySenderAndReceiver(Long senderId, Long receiverId) {
         return messageRepository.findBySender_IdAndReceiver_Id(senderId, receiverId);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Message> getMessagesBySenderAndReceiver(Long senderId, Long receiverId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("sentAt");
+        Page<Message> page = messageRepository.findBySender_IdAndReceiver_Id(senderId, receiverId, pageable);
+        return PagedResponse.of(page);
     }
 
     // Update - Full update

@@ -1,7 +1,9 @@
 package com.lingualink.controller;
 
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Message;
 import com.lingualink.service.MessageService;
+import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -9,11 +11,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -41,9 +45,30 @@ public class MessageController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all messages", description = "Retrieves a list of all messages")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved list of messages")
-    public ResponseEntity<List<Message>> getAllMessages() {
+    @Operation(summary = "Get all messages", description = "Retrieves a paginated list of all messages with optional filtering")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of messages")
+    })
+    public ResponseEntity<?> getAllMessages(
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir,
+            @Parameter(description = "Filter by booking ID") @RequestParam(required = false) Long bookingId,
+            @Parameter(description = "Filter by sender ID") @RequestParam(required = false) Long senderId,
+            @Parameter(description = "Filter by receiver ID") @RequestParam(required = false) Long receiverId,
+            @Parameter(description = "Filter by content (partial match)") @RequestParam(required = false) String content,
+            @Parameter(description = "Filter by sent date from (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime sentFrom,
+            @Parameter(description = "Filter by sent date to (ISO format)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime sentTo) {
+        
+        if (page != null || size != null || bookingId != null || senderId != null || 
+            receiverId != null || content != null || sentFrom != null || sentTo != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Message> pagedResponse = messageService.getAllMessagesWithFilters(
+                    pageParams, bookingId, senderId, receiverId, content, sentFrom, sentTo);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Message> messages = messageService.getAllMessages();
         return ResponseEntity.ok(messages);
     }
@@ -61,20 +86,42 @@ public class MessageController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    @Operation(summary = "Get messages by booking ID", description = "Retrieves all messages for a specific booking")
+    @Operation(summary = "Get messages by booking ID", description = "Retrieves all messages for a specific booking with optional pagination")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved messages")
-    public ResponseEntity<List<Message>> getMessagesByBookingId(
-            @Parameter(description = "Booking ID") @PathVariable Long bookingId) {
+    public ResponseEntity<?> getMessagesByBookingId(
+            @Parameter(description = "Booking ID") @PathVariable Long bookingId,
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir) {
+        
+        if (page != null || size != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Message> pagedResponse = messageService.getMessagesByBookingId(bookingId, pageParams);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Message> messages = messageService.getMessagesByBookingId(bookingId);
         return ResponseEntity.ok(messages);
     }
 
     @GetMapping("/sender/{senderId}/receiver/{receiverId}")
-    @Operation(summary = "Get messages between users", description = "Retrieves all messages between a sender and receiver")
+    @Operation(summary = "Get messages between users", description = "Retrieves all messages between a sender and receiver with optional pagination")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved messages")
-    public ResponseEntity<List<Message>> getMessagesBySenderAndReceiver(
+    public ResponseEntity<?> getMessagesBySenderAndReceiver(
             @Parameter(description = "Sender user ID") @PathVariable Long senderId,
-            @Parameter(description = "Receiver user ID") @PathVariable Long receiverId) {
+            @Parameter(description = "Receiver user ID") @PathVariable Long receiverId,
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir) {
+        
+        if (page != null || size != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Message> pagedResponse = messageService.getMessagesBySenderAndReceiver(senderId, receiverId, pageParams);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Message> messages = messageService.getMessagesBySenderAndReceiver(senderId, receiverId);
         return ResponseEntity.ok(messages);
     }

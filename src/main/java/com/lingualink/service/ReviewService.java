@@ -1,8 +1,12 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Review;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.ReviewRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,21 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Review> getAllReviews(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("createdAt");
+        Page<Review> page = reviewRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Review> getAllReviewsWithFilters(PageParams pageParams, Long bookingId, Long reviewerId, 
+                                                           Integer minRating, Integer maxRating, String comment) {
+        Pageable pageable = pageParams.toPageable("createdAt");
+        Page<Review> page = reviewRepository.findByFilters(bookingId, reviewerId, minRating, maxRating, comment, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public Review getReviewById(Long id) {
         return reviewRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
@@ -41,8 +60,22 @@ public class ReviewService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Review> getReviewsByBookingId(Long bookingId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("createdAt");
+        Page<Review> page = reviewRepository.findByBooking_Id(bookingId, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public List<Review> getReviewsByReviewerId(Long reviewerId) {
         return reviewRepository.findByReviewer_Id(reviewerId);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Review> getReviewsByReviewerId(Long reviewerId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("createdAt");
+        Page<Review> page = reviewRepository.findByReviewer_Id(reviewerId, pageable);
+        return PagedResponse.of(page);
     }
 
     // Update - Full update

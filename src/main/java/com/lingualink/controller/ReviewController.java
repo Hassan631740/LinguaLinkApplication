@@ -1,7 +1,9 @@
 package com.lingualink.controller;
 
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Review;
 import com.lingualink.service.ReviewService;
+import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -41,9 +43,29 @@ public class ReviewController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all reviews", description = "Retrieves a list of all reviews")
-    @ApiResponse(responseCode = "200", description = "Successfully retrieved list of reviews")
-    public ResponseEntity<List<Review>> getAllReviews() {
+    @Operation(summary = "Get all reviews", description = "Retrieves a paginated list of all reviews with optional filtering")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of reviews")
+    })
+    public ResponseEntity<?> getAllReviews(
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir,
+            @Parameter(description = "Filter by booking ID") @RequestParam(required = false) Long bookingId,
+            @Parameter(description = "Filter by reviewer ID") @RequestParam(required = false) Long reviewerId,
+            @Parameter(description = "Filter by minimum rating (1-5)") @RequestParam(required = false) Integer minRating,
+            @Parameter(description = "Filter by maximum rating (1-5)") @RequestParam(required = false) Integer maxRating,
+            @Parameter(description = "Filter by comment (partial match)") @RequestParam(required = false) String comment) {
+        
+        if (page != null || size != null || bookingId != null || reviewerId != null || 
+            minRating != null || maxRating != null || comment != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Review> pagedResponse = reviewService.getAllReviewsWithFilters(
+                    pageParams, bookingId, reviewerId, minRating, maxRating, comment);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Review> reviews = reviewService.getAllReviews();
         return ResponseEntity.ok(reviews);
     }
@@ -61,19 +83,41 @@ public class ReviewController {
     }
 
     @GetMapping("/booking/{bookingId}")
-    @Operation(summary = "Get reviews by booking ID", description = "Retrieves all reviews for a specific booking")
+    @Operation(summary = "Get reviews by booking ID", description = "Retrieves all reviews for a specific booking with optional pagination")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved reviews")
-    public ResponseEntity<List<Review>> getReviewsByBookingId(
-            @Parameter(description = "Booking ID") @PathVariable Long bookingId) {
+    public ResponseEntity<?> getReviewsByBookingId(
+            @Parameter(description = "Booking ID") @PathVariable Long bookingId,
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir) {
+        
+        if (page != null || size != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Review> pagedResponse = reviewService.getReviewsByBookingId(bookingId, pageParams);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Review> reviews = reviewService.getReviewsByBookingId(bookingId);
         return ResponseEntity.ok(reviews);
     }
 
     @GetMapping("/reviewer/{reviewerId}")
-    @Operation(summary = "Get reviews by reviewer ID", description = "Retrieves all reviews written by a specific reviewer")
+    @Operation(summary = "Get reviews by reviewer ID", description = "Retrieves all reviews written by a specific reviewer with optional pagination")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved reviews")
-    public ResponseEntity<List<Review>> getReviewsByReviewerId(
-            @Parameter(description = "Reviewer user ID") @PathVariable Long reviewerId) {
+    public ResponseEntity<?> getReviewsByReviewerId(
+            @Parameter(description = "Reviewer user ID") @PathVariable Long reviewerId,
+            @Parameter(description = "Page number (0-indexed)") @RequestParam(required = false) Integer page,
+            @Parameter(description = "Page size (1-100)") @RequestParam(required = false) Integer size,
+            @Parameter(description = "Sort field") @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort direction (asc/desc)") @RequestParam(required = false) String sortDir) {
+        
+        if (page != null || size != null) {
+            var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
+            PagedResponse<Review> pagedResponse = reviewService.getReviewsByReviewerId(reviewerId, pageParams);
+            return ResponseEntity.ok(pagedResponse);
+        }
+        
         List<Review> reviews = reviewService.getReviewsByReviewerId(reviewerId);
         return ResponseEntity.ok(reviews);
     }

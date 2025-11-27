@@ -1,11 +1,16 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Booking;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.BookingRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -29,6 +34,21 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Booking> getAllBookings(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Booking> getAllBookingsWithFilters(PageParams pageParams, Long eventId, Long interpreterId, 
+                                                             String status, BigDecimal minPrice, BigDecimal maxPrice) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByFilters(eventId, interpreterId, status, minPrice, maxPrice, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking", "id", id));
@@ -40,13 +60,34 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Booking> getBookingsByEventId(Long eventId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByEvent_Id(eventId, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public List<Booking> getBookingsByInterpreterId(Long interpreterId) {
         return bookingRepository.findByInterpreter_Id(interpreterId);
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<Booking> getBookingsByInterpreterId(Long interpreterId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByInterpreter_Id(interpreterId, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
     public List<Booking> getBookingsByStatus(String status) {
         return bookingRepository.findByStatus(status);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Booking> getBookingsByStatus(String status, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByStatus(status, pageable);
+        return PagedResponse.of(page);
     }
 
     // Update - Full update

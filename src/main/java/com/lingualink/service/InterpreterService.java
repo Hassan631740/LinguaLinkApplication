@@ -1,11 +1,16 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
 import com.lingualink.entity.Interpreter;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.InterpreterRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +32,23 @@ public class InterpreterService {
     @Transactional(readOnly = true)
     public List<Interpreter> getAllInterpreters() {
         return interpreterRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Interpreter> getAllInterpreters(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("id");
+        Page<Interpreter> page = interpreterRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<Interpreter> getAllInterpretersWithFilters(PageParams pageParams, String language, 
+                                                                     BigDecimal minRate, BigDecimal maxRate,
+                                                                     Integer minExperience, Integer maxExperience) {
+        Pageable pageable = pageParams.toPageable("ratePerHour");
+        Page<Interpreter> page = interpreterRepository.findByFilters(language, minRate, maxRate, 
+                                                                      minExperience, maxExperience, pageable);
+        return PagedResponse.of(page);
     }
 
     @Transactional(readOnly = true)

@@ -1,23 +1,33 @@
 package com.lingualink.service;
 
+import com.lingualink.dto.PageParams;
+import com.lingualink.dto.PagedResponse;
+import com.lingualink.dto.request.UserRequest;
+import com.lingualink.dto.response.UserResponse;
 import com.lingualink.entity.User;
 import com.lingualink.exception.ResourceNotFoundException;
+import com.lingualink.mapper.UserMapper;
 import com.lingualink.repository.UserRepository;
 import com.lingualink.security.SecurityUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserService {
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     // Create
@@ -28,10 +38,55 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public UserResponse createUser(UserRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists");
+        }
+        User user = userMapper.toEntity(request);
+        User savedUser = userRepository.save(user);
+        return userMapper.toResponse(savedUser);
+    }
+
     // Read
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<User> getAllUsers(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("id");
+        Page<User> page = userRepository.findAll(pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<UserResponse> getAllUsersAsResponse(PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("id");
+        Page<User> page = userRepository.findAll(pageable);
+        List<UserResponse> content = page.getContent().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return new PagedResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<User> getAllUsersWithFilters(PageParams pageParams, String name, String email, String role) {
+        Pageable pageable = pageParams.toPageable("id");
+        Page<User> page = userRepository.findByFilters(name, email, role, pageable);
+        return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<UserResponse> getAllUsersWithFiltersAsResponse(PageParams pageParams, String name, String email, String role) {
+        Pageable pageable = pageParams.toPageable("id");
+        Page<User> page = userRepository.findByFilters(name, email, role, pageable);
+        List<UserResponse> content = page.getContent().stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+        return new PagedResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
     }
 
     @Transactional(readOnly = true)
@@ -40,6 +95,12 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         validateUserAccess(user);
         return user;
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getUserByIdAsResponse(Long id) {
+        User user = getUserById(id);
+        return userMapper.toResponse(user);
     }
 
     @Transactional(readOnly = true)
@@ -75,6 +136,27 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public UserResponse updateUser(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        validateUserAccess(user);
+        
+        // Only administrators can change roles
+        if (request.getRole() != null && !SecurityUtils.isAdministrator()) {
+            request.setRole(user.getRole()); // Keep original role
+        }
+        
+        // Check if email is being changed and if new email already exists
+        if (!user.getEmail().equals(request.getEmail()) && 
+            userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists");
+        }
+        
+        userMapper.updateEntityFromRequest(request, user);
+        User savedUser = userRepository.save(user);
+        return userMapper.toResponse(savedUser);
+    }
+
     // Update - Partial update
     public User patchUser(Long id, User userDetails) {
         User user = userRepository.findById(id)
@@ -98,6 +180,27 @@ public class UserService {
             user.setRole(userDetails.getRole());
         }
         return userRepository.save(user);
+    }
+
+    public UserResponse patchUser(Long id, UserRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        validateUserAccess(user);
+        
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists");
+            }
+        }
+        
+        // Only administrators can change roles
+        if (request.getRole() != null && !SecurityUtils.isAdministrator()) {
+            request.setRole(null); // Ignore role change
+        }
+        
+        userMapper.updateEntityFromRequest(request, user);
+        User savedUser = userRepository.save(user);
+        return userMapper.toResponse(savedUser);
     }
 
     // Delete
