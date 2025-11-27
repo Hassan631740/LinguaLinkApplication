@@ -27,6 +27,7 @@ public class Message {
     private String content;
 
     @CreationTimestamp
+    @Column(name = "sent_at")
     private LocalDateTime sentAt;
 
     // Getters and Setters

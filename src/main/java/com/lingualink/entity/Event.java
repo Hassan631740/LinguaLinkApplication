@@ -19,7 +19,10 @@ public class Event {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "start_datetime")
     private LocalDateTime startDatetime;
+    
+    @Column(name = "end_datetime")
     private LocalDateTime endDatetime;
     private String location;
     private String language;

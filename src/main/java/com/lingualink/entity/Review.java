@@ -25,6 +25,7 @@ public class Review {
     private String comment;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     // Getters and Setters

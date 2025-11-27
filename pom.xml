@@ -49,10 +49,17 @@
       <artifactId>mysql-connector-j</artifactId>
     </dependency>
 
-    <!-- Flyway -->
+    <!-- Flyway - Updated to support MySQL 9.3+ -->
+    <!-- Version 11.0.0+ required for MySQL 9.3 support -->
     <dependency>
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
+      <version>11.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-mysql</artifactId>
+      <version>11.0.0</version>
     </dependency>
 
     <!-- JJWT (JWT library) -->

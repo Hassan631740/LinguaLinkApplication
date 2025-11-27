@@ -23,12 +23,15 @@ public class Booking {
     private String status;
 
     @CreationTimestamp
+    @Column(name = "requested_at")
     private LocalDateTime requestedAt;
 
+    @Column(name = "confirmed_at")
     private LocalDateTime confirmedAt;
 
     private BigDecimal price;
 
+    @Column(name = "payment_id")
     private Long paymentId;
 
     // Getters and Setters

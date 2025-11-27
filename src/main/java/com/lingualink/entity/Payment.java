@@ -19,6 +19,7 @@ public class Payment {
     private String currency;
     private String method;
     private String status;
+    @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
     // Getters and Setters

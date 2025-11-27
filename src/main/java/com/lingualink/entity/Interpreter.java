@@ -16,7 +16,10 @@ public class Interpreter {
     @Column(columnDefinition = "json")
     private String languages;
 
+    @Column(name = "rate_per_hour")
     private BigDecimal ratePerHour;
+    
+    @Column(name = "experience_years")
     private Integer experienceYears;
 
     @Column(columnDefinition = "TEXT")

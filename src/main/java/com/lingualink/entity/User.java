@@ -19,6 +19,7 @@ public class User {
     private String role;
 
     @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     // getters and setters
