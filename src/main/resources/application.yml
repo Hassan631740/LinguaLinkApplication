@@ -4,9 +4,9 @@ spring:
   
   # MySQL Database Configuration
   datasource:
-    url: jdbc:mysql://localhost:3306/lingualink?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
-    username: root
-    password: .hassan.92
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:lingualink}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
     driver-class-name: com.mysql.cj.jdbc.Driver
     # Connection Pool Configuration (HikariCP - default in Spring Boot)
     hikari:
@@ -69,12 +69,28 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: change-me-to-strong-secret
-  expiration-ms: 3600000
+  # IMPORTANT: Change this to a strong, random secret in production (minimum 32 characters)
+  # Generate a secure secret: openssl rand -base64 32
+  # Value is loaded from .env file (JWT_SECRET) or environment variable
+  secret: ${JWT_SECRET:change-me-to-strong-secret-key-minimum-32-characters-long}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}  # 1 hour in milliseconds
 
 # Server Configuration
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   error:
     include-message: always
     include-stacktrace: on_param
+
+# SpringDoc OpenAPI (Swagger) Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json

@@ -9,6 +9,9 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/PaymentController.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/ReviewController.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/UserController.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/dto/JwtAuthenticationResponse.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/dto/LoginRequest.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/dto/RegisterRequest.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Booking.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Event.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Interpreter.java
@@ -23,6 +26,10 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/PaymentRepository.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/ReviewRepository.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/UserRepository.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/CustomUserDetailsService.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtAuthenticationFilter.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtTokenProvider.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/UserPrincipal.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/BookingService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/EventService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/InterpreterService.java

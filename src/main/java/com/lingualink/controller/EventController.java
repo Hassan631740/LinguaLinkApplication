@@ -2,6 +2,9 @@ package com.lingualink.controller;
 
 import com.lingualink.entity.Event;
 import com.lingualink.service.EventService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +13,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
+@Tag(name = "Events", description = "Event management API endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class EventController {
     private final EventService eventService;
 
