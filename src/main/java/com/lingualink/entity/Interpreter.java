@@ -22,5 +22,52 @@ public class Interpreter {
     @Column(columnDefinition = "TEXT")
     private String bio;
 
-    // getters/setters omitted for brevity
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public String getLanguages() {
+        return languages;
+    }
+
+    public void setLanguages(String languages) {
+        this.languages = languages;
+    }
+
+    public BigDecimal getRatePerHour() {
+        return ratePerHour;
+    }
+
+    public void setRatePerHour(BigDecimal ratePerHour) {
+        this.ratePerHour = ratePerHour;
+    }
+
+    public Integer getExperienceYears() {
+        return experienceYears;
+    }
+
+    public void setExperienceYears(Integer experienceYears) {
+        this.experienceYears = experienceYears;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
 }
