@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,12 @@ public class PaymentController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new payment", description = "Creates a new payment record in the system")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Create a new payment", description = "Creates a new payment record in the system (Client or Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Payment created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Payment> createPayment(@Valid @RequestBody Payment payment) {
         Payment createdPayment = paymentService.createPayment(payment);
@@ -76,11 +79,13 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update payment", description = "Fully updates an existing payment")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @Operation(summary = "Update payment", description = "Fully updates an existing payment (Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Payment updated successfully"),
             @ApiResponse(responseCode = "404", description = "Payment not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Payment> updatePayment(
             @Parameter(description = "Payment ID") @PathVariable Long id,
@@ -90,11 +95,13 @@ public class PaymentController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update payment", description = "Partially updates an existing payment")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @Operation(summary = "Partially update payment", description = "Partially updates an existing payment (Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Payment updated successfully"),
             @ApiResponse(responseCode = "404", description = "Payment not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Payment> patchPayment(
             @Parameter(description = "Payment ID") @PathVariable Long id,
@@ -104,10 +111,12 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete payment", description = "Deletes a payment by its ID")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @Operation(summary = "Delete payment", description = "Deletes a payment by its ID (Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Payment deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Payment not found")
+            @ApiResponse(responseCode = "404", description = "Payment not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deletePayment(
             @Parameter(description = "Payment ID") @PathVariable Long id) {

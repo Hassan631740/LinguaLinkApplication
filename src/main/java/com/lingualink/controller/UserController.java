@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,7 +40,8 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all users", description = "Retrieves a list of all users")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @Operation(summary = "Get all users", description = "Retrieves a list of all users (Administrator only)")
     @ApiResponse(responseCode = "200", description = "Successfully retrieved list of users")
     public ResponseEntity<List<User>> getAllUsers() {
         List<User> users = userService.getAllUsers();
@@ -47,10 +49,12 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID", description = "Retrieves a user by their ID")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Get user by ID", description = "Retrieves a user by their ID. Users can only view their own profile unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User found"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<User> getUserById(
             @Parameter(description = "User ID") @PathVariable Long id) {
@@ -72,11 +76,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update user", description = "Fully updates an existing user")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Update user", description = "Fully updates an existing user. Users can only update their own profile unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<User> updateUser(
             @Parameter(description = "User ID") @PathVariable Long id,
@@ -86,11 +92,13 @@ public class UserController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update user", description = "Partially updates an existing user")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Partially update user", description = "Partially updates an existing user. Users can only update their own profile unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
             @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<User> patchUser(
             @Parameter(description = "User ID") @PathVariable Long id,
@@ -100,10 +108,12 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete user", description = "Deletes a user by their ID")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @Operation(summary = "Delete user", description = "Deletes a user by their ID (Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deleteUser(
             @Parameter(description = "User ID") @PathVariable Long id) {

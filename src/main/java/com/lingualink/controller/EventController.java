@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,12 @@ public class EventController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new event", description = "Creates a new event in the system")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Create a new event", description = "Creates a new event in the system (Client or Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Event created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Event> createEvent(@Valid @RequestBody Event event) {
         Event createdEvent = eventService.createEvent(event);
@@ -76,11 +79,13 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update event", description = "Fully updates an existing event")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Update event", description = "Fully updates an existing event. Only the event organizer or administrators can update.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Event updated successfully"),
             @ApiResponse(responseCode = "404", description = "Event not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Event> updateEvent(
             @Parameter(description = "Event ID") @PathVariable Long id,
@@ -90,11 +95,13 @@ public class EventController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update event", description = "Partially updates an existing event")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Partially update event", description = "Partially updates an existing event. Only the event organizer or administrators can update.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Event updated successfully"),
             @ApiResponse(responseCode = "404", description = "Event not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Event> patchEvent(
             @Parameter(description = "Event ID") @PathVariable Long id,
@@ -104,10 +111,12 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete event", description = "Deletes an event by its ID")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Delete event", description = "Deletes an event by its ID. Only the event organizer or administrators can delete.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Event deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Event not found")
+            @ApiResponse(responseCode = "404", description = "Event not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deleteEvent(
             @Parameter(description = "Event ID") @PathVariable Long id) {

@@ -23,8 +23,29 @@ public class UserPrincipal implements UserDetails {
     }
 
     public static UserPrincipal create(User user) {
+        // Normalize role to ensure it matches Role enum values
+        String role = user.getRole();
+        if (role == null || role.isEmpty()) {
+            role = "CLIENT"; // Default role
+        } else {
+            // Handle legacy role names
+            role = role.toUpperCase();
+            switch (role) {
+                case "USER":
+                case "ORGANIZER":
+                    role = "CLIENT";
+                    break;
+                case "ADMIN":
+                    role = "ADMINISTRATOR";
+                    break;
+                default:
+                    // Keep as is if it's already CLIENT, INTERPRETER, or ADMINISTRATOR
+                    break;
+            }
+        }
+        
         List<GrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + (user.getRole() != null ? user.getRole().toUpperCase() : "USER"))
+                new SimpleGrantedAuthority("ROLE_" + role)
         );
 
         return new UserPrincipal(

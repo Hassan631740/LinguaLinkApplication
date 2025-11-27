@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,12 @@ public class BookingController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new booking", description = "Creates a new booking in the system")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Create a new booking", description = "Creates a new booking in the system (Client or Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Booking created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Booking> createBooking(@Valid @RequestBody Booking booking) {
         Booking createdBooking = bookingService.createBooking(booking);
@@ -85,11 +88,13 @@ public class BookingController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update booking", description = "Fully updates an existing booking")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Update booking", description = "Fully updates an existing booking. Clients can update their own bookings, interpreters can update assigned bookings, administrators can update any booking.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Booking updated successfully"),
             @ApiResponse(responseCode = "404", description = "Booking not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Booking> updateBooking(
             @Parameter(description = "Booking ID") @PathVariable Long id,
@@ -99,11 +104,13 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update booking", description = "Partially updates an existing booking")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Partially update booking", description = "Partially updates an existing booking. Clients can update their own bookings, interpreters can update assigned bookings, administrators can update any booking.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Booking updated successfully"),
             @ApiResponse(responseCode = "404", description = "Booking not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Booking> patchBooking(
             @Parameter(description = "Booking ID") @PathVariable Long id,
@@ -113,10 +120,12 @@ public class BookingController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete booking", description = "Deletes a booking by its ID")
+    @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
+    @Operation(summary = "Delete booking", description = "Deletes a booking by its ID. Clients can delete their own bookings, administrators can delete any booking.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Booking deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Booking not found")
+            @ApiResponse(responseCode = "404", description = "Booking not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deleteBooking(
             @Parameter(description = "Booking ID") @PathVariable Long id) {

@@ -3,6 +3,7 @@ package com.lingualink.controller;
 import com.lingualink.dto.JwtAuthenticationResponse;
 import com.lingualink.dto.LoginRequest;
 import com.lingualink.dto.RegisterRequest;
+import com.lingualink.entity.Role;
 import com.lingualink.entity.User;
 import com.lingualink.security.JwtTokenProvider;
 import com.lingualink.service.UserService;
@@ -51,7 +52,10 @@ public class AuthController {
         user.setName(registerRequest.getName());
         user.setEmail(registerRequest.getEmail());
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setRole(registerRequest.getRole() != null ? registerRequest.getRole() : "USER");
+        // Default to CLIENT role if not specified
+        String role = registerRequest.getRole() != null ? 
+                Role.fromString(registerRequest.getRole()).getValue() : Role.CLIENT.getValue();
+        user.setRole(role);
 
         User savedUser = userService.createUser(user);
 

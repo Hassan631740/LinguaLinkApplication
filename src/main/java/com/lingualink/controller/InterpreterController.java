@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,10 +29,12 @@ public class InterpreterController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new interpreter", description = "Creates a new interpreter profile in the system")
+    @PreAuthorize("hasAnyRole('INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Create a new interpreter", description = "Creates a new interpreter profile in the system (Interpreter or Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Interpreter created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Interpreter> createInterpreter(@Valid @RequestBody Interpreter interpreter) {
         Interpreter createdInterpreter = interpreterService.createInterpreter(interpreter);
@@ -72,11 +75,13 @@ public class InterpreterController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update interpreter", description = "Fully updates an existing interpreter profile")
+    @PreAuthorize("hasAnyRole('INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Update interpreter", description = "Fully updates an existing interpreter profile. Interpreters can update their own profile, administrators can update any profile.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Interpreter updated successfully"),
             @ApiResponse(responseCode = "404", description = "Interpreter not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Interpreter> updateInterpreter(
             @Parameter(description = "Interpreter ID") @PathVariable Long id,
@@ -86,11 +91,13 @@ public class InterpreterController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update interpreter", description = "Partially updates an existing interpreter profile")
+    @PreAuthorize("hasAnyRole('INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Partially update interpreter", description = "Partially updates an existing interpreter profile. Interpreters can update their own profile, administrators can update any profile.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Interpreter updated successfully"),
             @ApiResponse(responseCode = "404", description = "Interpreter not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Interpreter> patchInterpreter(
             @Parameter(description = "Interpreter ID") @PathVariable Long id,
@@ -100,10 +107,12 @@ public class InterpreterController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete interpreter", description = "Deletes an interpreter profile by its ID")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    @Operation(summary = "Delete interpreter", description = "Deletes an interpreter profile by its ID (Administrator only)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Interpreter deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Interpreter not found")
+            @ApiResponse(responseCode = "404", description = "Interpreter not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deleteInterpreter(
             @Parameter(description = "Interpreter ID") @PathVariable Long id) {

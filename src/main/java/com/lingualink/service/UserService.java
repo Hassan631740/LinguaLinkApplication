@@ -3,6 +3,8 @@ package com.lingualink.service;
 import com.lingualink.entity.User;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.UserRepository;
+import com.lingualink.security.SecurityUtils;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +36,10 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public User getUserById(Long id) {
-        return userRepository.findById(id)
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        validateUserAccess(user);
+        return user;
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +49,14 @@ public class UserService {
 
     // Update - Full update
     public User updateUser(Long id, User userDetails) {
-        User user = getUserById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        validateUserAccess(user);
+        
+        // Only administrators can change roles
+        if (userDetails.getRole() != null && !SecurityUtils.isAdministrator()) {
+            userDetails.setRole(user.getRole()); // Keep original role
+        }
         
         // Check if email is being changed and if new email already exists
         if (!user.getEmail().equals(userDetails.getEmail()) && 
@@ -58,13 +69,17 @@ public class UserService {
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
             user.setPassword(userDetails.getPassword());
         }
-        user.setRole(userDetails.getRole());
+        if (userDetails.getRole() != null && SecurityUtils.isAdministrator()) {
+            user.setRole(userDetails.getRole());
+        }
         return userRepository.save(user);
     }
 
     // Update - Partial update
     public User patchUser(Long id, User userDetails) {
-        User user = getUserById(id);
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        validateUserAccess(user);
         
         if (userDetails.getName() != null) {
             user.setName(userDetails.getName());
@@ -78,7 +93,8 @@ public class UserService {
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
             user.setPassword(userDetails.getPassword());
         }
-        if (userDetails.getRole() != null) {
+        // Only administrators can change roles
+        if (userDetails.getRole() != null && SecurityUtils.isAdministrator()) {
             user.setRole(userDetails.getRole());
         }
         return userRepository.save(user);
@@ -93,6 +109,23 @@ public class UserService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    private void validateUserAccess(User user) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+        
+        // Administrators can access any user
+        if (SecurityUtils.isAdministrator()) {
+            return;
+        }
+        
+        // Users can only access their own profile
+        if (!user.getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You do not have permission to access this user");
+        }
     }
 }
 

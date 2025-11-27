@@ -3,6 +3,8 @@ package com.lingualink.service;
 import com.lingualink.entity.Event;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.EventRepository;
+import com.lingualink.security.SecurityUtils;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,7 @@ public class EventService {
     // Update - Full update
     public Event updateEvent(Long id, Event eventDetails) {
         Event event = getEventById(id);
+        validateEventOwnership(event);
         event.setOrganizer(eventDetails.getOrganizer());
         event.setTitle(eventDetails.getTitle());
         event.setDescription(eventDetails.getDescription());
@@ -62,6 +65,7 @@ public class EventService {
     // Update - Partial update
     public Event patchEvent(Long id, Event eventDetails) {
         Event event = getEventById(id);
+        validateEventOwnership(event);
         
         if (eventDetails.getOrganizer() != null) {
             event.setOrganizer(eventDetails.getOrganizer());
@@ -91,6 +95,7 @@ public class EventService {
     // Delete
     public void deleteEvent(Long id) {
         Event event = getEventById(id);
+        validateEventOwnership(event);
         eventRepository.delete(event);
     }
 
@@ -99,6 +104,23 @@ public class EventService {
             if (event.getEndDatetime().isBefore(event.getStartDatetime())) {
                 throw new IllegalArgumentException("End datetime must be after start datetime");
             }
+        }
+    }
+
+    private void validateEventOwnership(Event event) {
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+        
+        // Administrators can access any event
+        if (SecurityUtils.isAdministrator()) {
+            return;
+        }
+        
+        // Check if current user is the organizer
+        if (event.getOrganizer() == null || !event.getOrganizer().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("You do not have permission to modify this event");
         }
     }
 }

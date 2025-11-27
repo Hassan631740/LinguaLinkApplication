@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,12 @@ public class ReviewController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new review", description = "Creates a new review in the system")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Create a new review", description = "Creates a new review in the system (All authenticated users)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Review created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Review> createReview(@Valid @RequestBody Review review) {
         Review createdReview = reviewService.createReview(review);
@@ -76,11 +79,13 @@ public class ReviewController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update review", description = "Fully updates an existing review")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Update review", description = "Fully updates an existing review. Users can only update their own reviews unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Review updated successfully"),
             @ApiResponse(responseCode = "404", description = "Review not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Review> updateReview(
             @Parameter(description = "Review ID") @PathVariable Long id,
@@ -90,11 +95,13 @@ public class ReviewController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update review", description = "Partially updates an existing review")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Partially update review", description = "Partially updates an existing review. Users can only update their own reviews unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Review updated successfully"),
             @ApiResponse(responseCode = "404", description = "Review not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Review> patchReview(
             @Parameter(description = "Review ID") @PathVariable Long id,
@@ -104,10 +111,12 @@ public class ReviewController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete review", description = "Deletes a review by its ID")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Delete review", description = "Deletes a review by its ID. Users can only delete their own reviews unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Review deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Review not found")
+            @ApiResponse(responseCode = "404", description = "Review not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deleteReview(
             @Parameter(description = "Review ID") @PathVariable Long id) {

@@ -71,6 +71,9 @@ public class SecurityConfig {
                                "/swagger-resources/**", "/webjars/**", "/swagger-ui/index.html").permitAll()
                 // Health check endpoints (if needed)
                 .requestMatchers("/actuator/health", "/health").permitAll()
+                // Administrator-only endpoints
+                .requestMatchers("/api/users/**").hasAnyRole("ADMINISTRATOR", "CLIENT", "INTERPRETER")
+                // Method-level security will handle fine-grained access control
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )

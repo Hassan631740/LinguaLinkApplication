@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,10 +28,12 @@ public class MessageController {
     }
 
     @PostMapping
-    @Operation(summary = "Create a new message", description = "Creates a new message in the system")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Create a new message", description = "Creates a new message in the system (All authenticated users)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Message created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Message> createMessage(@Valid @RequestBody Message message) {
         Message createdMessage = messageService.createMessage(message);
@@ -77,11 +80,13 @@ public class MessageController {
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Update message", description = "Fully updates an existing message")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Update message", description = "Fully updates an existing message. Users can only update their own messages unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Message updated successfully"),
             @ApiResponse(responseCode = "404", description = "Message not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Message> updateMessage(
             @Parameter(description = "Message ID") @PathVariable Long id,
@@ -91,11 +96,13 @@ public class MessageController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Partially update message", description = "Partially updates an existing message")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Partially update message", description = "Partially updates an existing message. Users can only update their own messages unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Message updated successfully"),
             @ApiResponse(responseCode = "404", description = "Message not found"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data")
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Message> patchMessage(
             @Parameter(description = "Message ID") @PathVariable Long id,
@@ -105,10 +112,12 @@ public class MessageController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete message", description = "Deletes a message by its ID")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Delete message", description = "Deletes a message by its ID. Users can only delete their own messages unless they are administrators.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "Message deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Message not found")
+            @ApiResponse(responseCode = "404", description = "Message not found"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
     })
     public ResponseEntity<Void> deleteMessage(
             @Parameter(description = "Message ID") @PathVariable Long id) {

@@ -1,5 +1,6 @@
 com/lingualink/repository/BookingRepository.class
 com/lingualink/security/JwtAuthenticationFilter.class
+com/lingualink/entity/Role.class
 com/lingualink/config/OpenApiConfig.class
 com/lingualink/service/UserService.class
 com/lingualink/controller/UserController.class
@@ -17,6 +18,7 @@ com/lingualink/config/DotEnvConfig.class
 com/lingualink/entity/Message.class
 com/lingualink/service/MessageService.class
 com/lingualink/security/JwtTokenProvider.class
+com/lingualink/config/SecurityUtilsConfig.class
 com/lingualink/controller/PaymentController.class
 com/lingualink/service/ReviewService.class
 com/lingualink/config/SecurityConfig.class
@@ -40,6 +42,7 @@ com/lingualink/repository/InterpreterRepository.class
 com/lingualink/entity/Booking.class
 com/lingualink/service/InterpreterService.class
 com/lingualink/service/EventService.class
+com/lingualink/security/SecurityUtils.class
 com/lingualink/controller/EventController.class
 com/lingualink/controller/InterpreterController.class
 com/lingualink/repository/MessageRepository.class

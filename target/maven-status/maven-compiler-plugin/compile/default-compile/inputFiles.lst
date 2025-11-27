@@ -4,6 +4,7 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/JpaConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/OpenApiConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/SecurityConfig.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/SecurityUtilsConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/AuthController.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/BookingController.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/EventController.java
@@ -22,6 +23,7 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Message.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Payment.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Review.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Role.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/User.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/exception/GlobalExceptionHandler.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/exception/ResourceNotFoundException.java
@@ -35,6 +37,7 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/CustomUserDetailsService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtAuthenticationFilter.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtTokenProvider.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/SecurityUtils.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/UserPrincipal.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/BookingService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/EventService.java
