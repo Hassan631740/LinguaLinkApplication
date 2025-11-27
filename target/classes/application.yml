@@ -82,6 +82,29 @@ server:
     include-message: always
     include-stacktrace: on_param
 
+# CORS Configuration
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:4200
+    - http://localhost:5173
+    - http://127.0.0.1:3000
+    - http://127.0.0.1:4200
+    - http://127.0.0.1:5173
+  allowed-methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - PATCH
+    - OPTIONS
+  allowed-headers:
+    - Authorization
+    - Content-Type
+    - X-Requested-With
+  allow-credentials: true
+  max-age: 3600
+
 # SpringDoc OpenAPI (Swagger) Configuration
 springdoc:
   api-docs:
