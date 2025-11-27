@@ -1,5 +1,8 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/LinguaLinkApplication.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/CorsConfig.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/DotEnvConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/JpaConfig.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/OpenApiConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/SecurityConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/AuthController.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/controller/BookingController.java
@@ -12,6 +15,7 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/dto/JwtAuthenticationResponse.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/dto/LoginRequest.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/dto/RegisterRequest.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/BaseEntity.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Booking.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Event.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Interpreter.java
@@ -19,6 +23,8 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Payment.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/Review.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/entity/User.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/exception/GlobalExceptionHandler.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/exception/ResourceNotFoundException.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/BookingRepository.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/EventRepository.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/InterpreterRepository.java

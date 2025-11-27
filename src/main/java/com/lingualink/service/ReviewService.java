@@ -1,13 +1,15 @@
 package com.lingualink.service;
 
 import com.lingualink.entity.Review;
+import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.repository.ReviewRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@Transactional
 public class ReviewService {
     private final ReviewRepository reviewRepository;
 
@@ -17,30 +19,36 @@ public class ReviewService {
 
     // Create
     public Review createReview(Review review) {
+        validateRating(review.getRating());
         return reviewRepository.save(review);
     }
 
     // Read
+    @Transactional(readOnly = true)
     public List<Review> getAllReviews() {
         return reviewRepository.findAll();
     }
 
-    public Optional<Review> getReviewById(Long id) {
-        return reviewRepository.findById(id);
+    @Transactional(readOnly = true)
+    public Review getReviewById(Long id) {
+        return reviewRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Review", "id", id));
     }
 
+    @Transactional(readOnly = true)
     public List<Review> getReviewsByBookingId(Long bookingId) {
         return reviewRepository.findByBooking_Id(bookingId);
     }
 
+    @Transactional(readOnly = true)
     public List<Review> getReviewsByReviewerId(Long reviewerId) {
         return reviewRepository.findByReviewer_Id(reviewerId);
     }
 
-    // Update
+    // Update - Full update
     public Review updateReview(Long id, Review reviewDetails) {
-        Review review = reviewRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Review not found with id: " + id));
+        Review review = getReviewById(id);
+        validateRating(reviewDetails.getRating());
         review.setBooking(reviewDetails.getBooking());
         review.setReviewer(reviewDetails.getReviewer());
         review.setRating(reviewDetails.getRating());
@@ -48,9 +56,37 @@ public class ReviewService {
         return reviewRepository.save(review);
     }
 
+    // Update - Partial update
+    public Review patchReview(Long id, Review reviewDetails) {
+        Review review = getReviewById(id);
+        
+        if (reviewDetails.getBooking() != null) {
+            review.setBooking(reviewDetails.getBooking());
+        }
+        if (reviewDetails.getReviewer() != null) {
+            review.setReviewer(reviewDetails.getReviewer());
+        }
+        if (reviewDetails.getRating() != null) {
+            validateRating(reviewDetails.getRating());
+            review.setRating(reviewDetails.getRating());
+        }
+        if (reviewDetails.getComment() != null) {
+            review.setComment(reviewDetails.getComment());
+        }
+        return reviewRepository.save(review);
+    }
+
     // Delete
     public void deleteReview(Long id) {
-        reviewRepository.deleteById(id);
+        Review review = getReviewById(id);
+        reviewRepository.delete(review);
+    }
+
+    private void validateRating(Integer rating) {
+        if (rating != null && (rating < 1 || rating > 5)) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5");
+        }
     }
 }
+
 

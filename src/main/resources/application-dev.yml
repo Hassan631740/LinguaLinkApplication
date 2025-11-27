@@ -1,0 +1,63 @@
+# Development Environment Configuration
+# Activate with: spring.profiles.active=dev
+# Typically used for shared development/staging servers
+
+spring:
+  # MySQL Database Configuration (Dev)
+  datasource:
+    url: jdbc:mysql://${DB_HOST:dev-db.example.com}:${DB_PORT:3306}/${DB_NAME:lingualink_dev}?useSSL=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Connection Pool Configuration (HikariCP)
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration (Dev - less verbose)
+  jpa:
+    # Don't show SQL in console (too verbose for shared environment)
+    show-sql: false
+    properties:
+      hibernate:
+        # Don't format SQL
+        format_sql: false
+        # Don't generate statistics
+        generate_statistics: false
+
+# Server Configuration (Dev)
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-stacktrace: on_param
+
+# CORS Configuration (Dev - specific frontend URLs)
+cors:
+  allowed-origins:
+    - ${CORS_ORIGIN_1:https://dev.lingualink.example.com}
+    - ${CORS_ORIGIN_2:https://dev-app.lingualink.example.com}
+    # Add more dev frontend URLs as needed
+
+# SpringDoc OpenAPI (Swagger) Configuration (Dev - enabled for API testing)
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+
+# Logging Configuration (Dev - info level)
+logging:
+  level:
+    root: INFO
+    com.lingualink: INFO
+    org.hibernate.SQL: INFO
+    org.springframework.web: INFO
+    org.springframework.security: WARN
+

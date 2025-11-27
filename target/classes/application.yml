@@ -1,23 +1,17 @@
+# Base configuration - common across all environments
+# Environment-specific overrides are in application-{profile}.yml files
+# Activate a profile using: spring.profiles.active=local|dev|prod
+# Default profile is 'local' for development convenience
+
 spring:
   application:
     name: lingualink
+  # Default to 'local' profile if not specified
+  # Override with: -Dspring.profiles.active=dev|prod or SPRING_PROFILES_ACTIVE=dev|prod
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
   
-  # MySQL Database Configuration
-  datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:lingualink}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:password}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    # Connection Pool Configuration (HikariCP - default in Spring Boot)
-    hikari:
-      minimum-idle: 5
-      maximum-pool-size: 20
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      leak-detection-threshold: 60000
-  
-  # Spring Data JPA Configuration
+  # Spring Data JPA Configuration (common settings)
   jpa:
     # Database Platform
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -33,21 +27,14 @@ spring:
         # Use underscore naming for table and column names
         implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     
-    # Show SQL queries in console (disable in production)
-    show-sql: true
-    
-    # JPA Properties
+    # JPA Properties (common)
     properties:
       hibernate:
-        # Format SQL for better readability
-        format_sql: true
         # Use JDBC batch operations for better performance
         jdbc:
           batch_size: 20
           order_inserts: true
           order_updates: true
-        # Generate statistics (disable in production)
-        generate_statistics: false
         # Connection provider
         connection:
           provider_disables_autocommit: true
@@ -67,30 +54,14 @@ spring:
     validate-on-migrate: true
     clean-disabled: true
 
-# JWT Configuration
+# JWT Configuration (base - can be overridden per environment)
 jwt:
-  # IMPORTANT: Change this to a strong, random secret in production (minimum 32 characters)
-  # Generate a secure secret: openssl rand -base64 32
   # Value is loaded from .env file (JWT_SECRET) or environment variable
   secret: ${JWT_SECRET:change-me-to-strong-secret-key-minimum-32-characters-long}
   expiration-ms: ${JWT_EXPIRATION_MS:3600000}  # 1 hour in milliseconds
 
-# Server Configuration
-server:
-  port: ${SERVER_PORT:8080}
-  error:
-    include-message: always
-    include-stacktrace: on_param
-
-# CORS Configuration
+# CORS Configuration (common methods and headers)
 cors:
-  allowed-origins:
-    - http://localhost:3000
-    - http://localhost:4200
-    - http://localhost:5173
-    - http://127.0.0.1:3000
-    - http://127.0.0.1:4200
-    - http://127.0.0.1:5173
   allowed-methods:
     - GET
     - POST
@@ -105,15 +76,9 @@ cors:
   allow-credentials: true
   max-age: 3600
 
-# SpringDoc OpenAPI (Swagger) Configuration
+# SpringDoc OpenAPI (Swagger) Configuration (base)
 springdoc:
   api-docs:
     path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-    operations-sorter: method
-    tags-sorter: alpha
-    try-it-out-enabled: true
   default-consumes-media-type: application/json
   default-produces-media-type: application/json

@@ -1,0 +1,68 @@
+# Local Development Environment Configuration
+# Activate with: spring.profiles.active=local
+# Or set in IDE run configuration: SPRING_PROFILES_ACTIVE=local
+
+spring:
+  # MySQL Database Configuration (Local)
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:lingualink}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Connection Pool Configuration (HikariCP)
+    hikari:
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+  
+  # JPA Configuration (Local - verbose for debugging)
+  jpa:
+    # Show SQL queries in console
+    show-sql: true
+    properties:
+      hibernate:
+        # Format SQL for better readability
+        format_sql: true
+        # Generate statistics for debugging
+        generate_statistics: false
+
+# Server Configuration (Local)
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-stacktrace: always
+
+# CORS Configuration (Local - allow all localhost origins)
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:4200
+    - http://localhost:5173
+    - http://127.0.0.1:3000
+    - http://127.0.0.1:4200
+    - http://127.0.0.1:5173
+    - http://localhost:8080
+
+# SpringDoc OpenAPI (Swagger) Configuration (Local - enabled)
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+
+# Logging Configuration (Local - verbose)
+logging:
+  level:
+    root: INFO
+    com.lingualink: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG
+

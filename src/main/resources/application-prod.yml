@@ -1,0 +1,82 @@
+# Production Environment Configuration
+# Activate with: spring.profiles.active=prod
+# IMPORTANT: Ensure all sensitive values are set via environment variables or secure vault
+
+spring:
+  # MySQL Database Configuration (Production)
+  datasource:
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useSSL=true&requireSSL=true&serverTimezone=UTC&useUnicode=true&characterEncoding=utf8
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Connection Pool Configuration (HikariCP - optimized for production)
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 50
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+      # Connection test query
+      connection-test-query: SELECT 1
+  
+  # JPA Configuration (Production - optimized)
+  jpa:
+    # Never show SQL in production
+    show-sql: false
+    properties:
+      hibernate:
+        # Don't format SQL
+        format_sql: false
+        # Don't generate statistics (performance overhead)
+        generate_statistics: false
+        # Optimize for production
+        jdbc:
+          batch_size: 50
+
+# JWT Configuration (Production - ensure strong secret from env)
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000}  # 1 hour default
+
+# Server Configuration (Production)
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  # Compression for better performance
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+    min-response-size: 1024
+
+# CORS Configuration (Production - strict origins only)
+cors:
+  allowed-origins:
+    - ${CORS_ORIGIN_1:https://lingualink.example.com}
+    - ${CORS_ORIGIN_2:https://www.lingualink.example.com}
+    # Add production frontend URLs only - no localhost!
+
+# SpringDoc OpenAPI (Swagger) Configuration (Production - DISABLED for security)
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+# Logging Configuration (Production - warn/error only)
+logging:
+  level:
+    root: WARN
+    com.lingualink: INFO
+    org.hibernate: WARN
+    org.springframework: WARN
+    org.springframework.security: WARN
+  # Log to file in production (configure path as needed)
+  file:
+    name: ${LOG_FILE_PATH:/var/log/lingualink/application.log}
+    max-size: 10MB
+    max-history: 30
+

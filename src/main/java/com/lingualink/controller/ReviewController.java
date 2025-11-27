@@ -2,6 +2,13 @@ package com.lingualink.controller;
 
 import com.lingualink.entity.Review;
 import com.lingualink.service.ReviewService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +17,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
+@Tag(name = "Reviews", description = "Review management API endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class ReviewController {
     private final ReviewService reviewService;
 
@@ -17,62 +26,92 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    // Create
     @PostMapping
-    public ResponseEntity<Review> createReview(@RequestBody Review review) {
+    @Operation(summary = "Create a new review", description = "Creates a new review in the system")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Review created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
+    public ResponseEntity<Review> createReview(@Valid @RequestBody Review review) {
         Review createdReview = reviewService.createReview(review);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReview);
     }
 
-    // Read - Get all
     @GetMapping
+    @Operation(summary = "Get all reviews", description = "Retrieves a list of all reviews")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved list of reviews")
     public ResponseEntity<List<Review>> getAllReviews() {
         List<Review> reviews = reviewService.getAllReviews();
         return ResponseEntity.ok(reviews);
     }
 
-    // Read - Get by ID
     @GetMapping("/{id}")
-    public ResponseEntity<Review> getReviewById(@PathVariable Long id) {
-        return reviewService.getReviewById(id)
-                .map(review -> ResponseEntity.ok(review))
-                .orElse(ResponseEntity.notFound().build());
+    @Operation(summary = "Get review by ID", description = "Retrieves a review by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Review found"),
+            @ApiResponse(responseCode = "404", description = "Review not found")
+    })
+    public ResponseEntity<Review> getReviewById(
+            @Parameter(description = "Review ID") @PathVariable Long id) {
+        Review review = reviewService.getReviewById(id);
+        return ResponseEntity.ok(review);
     }
 
-    // Read - Get by booking ID
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<List<Review>> getReviewsByBookingId(@PathVariable Long bookingId) {
+    @Operation(summary = "Get reviews by booking ID", description = "Retrieves all reviews for a specific booking")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved reviews")
+    public ResponseEntity<List<Review>> getReviewsByBookingId(
+            @Parameter(description = "Booking ID") @PathVariable Long bookingId) {
         List<Review> reviews = reviewService.getReviewsByBookingId(bookingId);
         return ResponseEntity.ok(reviews);
     }
 
-    // Read - Get by reviewer ID
     @GetMapping("/reviewer/{reviewerId}")
-    public ResponseEntity<List<Review>> getReviewsByReviewerId(@PathVariable Long reviewerId) {
+    @Operation(summary = "Get reviews by reviewer ID", description = "Retrieves all reviews written by a specific reviewer")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved reviews")
+    public ResponseEntity<List<Review>> getReviewsByReviewerId(
+            @Parameter(description = "Reviewer user ID") @PathVariable Long reviewerId) {
         List<Review> reviews = reviewService.getReviewsByReviewerId(reviewerId);
         return ResponseEntity.ok(reviews);
     }
 
-    // Update
     @PutMapping("/{id}")
-    public ResponseEntity<Review> updateReview(@PathVariable Long id, @RequestBody Review reviewDetails) {
-        try {
-            Review updatedReview = reviewService.updateReview(id, reviewDetails);
-            return ResponseEntity.ok(updatedReview);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @Operation(summary = "Update review", description = "Fully updates an existing review")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Review updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Review not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
+    public ResponseEntity<Review> updateReview(
+            @Parameter(description = "Review ID") @PathVariable Long id,
+            @Valid @RequestBody Review reviewDetails) {
+        Review updatedReview = reviewService.updateReview(id, reviewDetails);
+        return ResponseEntity.ok(updatedReview);
     }
 
-    // Delete
+    @PatchMapping("/{id}")
+    @Operation(summary = "Partially update review", description = "Partially updates an existing review")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Review updated successfully"),
+            @ApiResponse(responseCode = "404", description = "Review not found"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data")
+    })
+    public ResponseEntity<Review> patchReview(
+            @Parameter(description = "Review ID") @PathVariable Long id,
+            @RequestBody Review reviewDetails) {
+        Review updatedReview = reviewService.patchReview(id, reviewDetails);
+        return ResponseEntity.ok(updatedReview);
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        try {
-            reviewService.deleteReview(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    @Operation(summary = "Delete review", description = "Deletes a review by its ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Review deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Review not found")
+    })
+    public ResponseEntity<Void> deleteReview(
+            @Parameter(description = "Review ID") @PathVariable Long id) {
+        reviewService.deleteReview(id);
+        return ResponseEntity.noContent().build();
     }
 }
-
