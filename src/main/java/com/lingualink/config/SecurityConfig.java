@@ -1,6 +1,5 @@
 package com.lingualink.config;
 
-import com.lingualink.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -13,8 +12,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -24,14 +24,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
 public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtDecoder jwtDecoder;
+    private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(UserDetailsService userDetailsService, 
-                         JwtAuthenticationFilter jwtAuthenticationFilter,
+    public SecurityConfig(UserDetailsService userDetailsService,
+                         JwtDecoder jwtDecoder,
+                         JwtAuthenticationConverter jwtAuthenticationConverter,
                          @Qualifier("corsConfigurationSource") CorsConfigurationSource corsConfigurationSource) {
         this.userDetailsService = userDetailsService;
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.jwtDecoder = jwtDecoder;
+        this.jwtAuthenticationConverter = jwtAuthenticationConverter;
         this.corsConfigurationSource = corsConfigurationSource;
     }
 
@@ -62,6 +65,13 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             // Stateless session management (no sessions for JWT)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // OAuth2 Resource Server configuration
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                    .decoder(jwtDecoder)
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter)
+                )
+            )
             // Authorization rules
             .authorizeHttpRequests(auth -> auth
                 // Public endpoints
@@ -77,10 +87,8 @@ public class SecurityConfig {
                 // All other requests require authentication
                 .anyRequest().authenticated()
             )
-            // Authentication provider
-            .authenticationProvider(authenticationProvider())
-            // JWT filter before username/password filter
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            // Authentication provider for username/password authentication (login)
+            .authenticationProvider(authenticationProvider());
 
         return http.build();
     }

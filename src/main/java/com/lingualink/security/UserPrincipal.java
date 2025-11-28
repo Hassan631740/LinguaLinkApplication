@@ -1,5 +1,6 @@
 package com.lingualink.security;
 
+import com.lingualink.entity.Role;
 import com.lingualink.entity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,29 +24,14 @@ public class UserPrincipal implements UserDetails {
     }
 
     public static UserPrincipal create(User user) {
-        // Normalize role to ensure it matches Role enum values
-        String role = user.getRole();
-        if (role == null || role.isEmpty()) {
-            role = "CLIENT"; // Default role
-        } else {
-            // Handle legacy role names
-            role = role.toUpperCase();
-            switch (role) {
-                case "USER":
-                case "ORGANIZER":
-                    role = "CLIENT";
-                    break;
-                case "ADMIN":
-                    role = "ADMINISTRATOR";
-                    break;
-                default:
-                    // Keep as is if it's already CLIENT, INTERPRETER, or ADMINISTRATOR
-                    break;
-            }
-        }
+        // Get role from user entity, default to CLIENT if null
+        Role role = user.getRole() != null ? user.getRole() : Role.CLIENT;
         
+        // Convert role to authority with ROLE_ prefix
+        // Spring Security's hasRole() method expects authorities like "ROLE_ADMINISTRATOR"
+        // Note: hasRole('ADMINISTRATOR') in @PreAuthorize automatically adds the ROLE_ prefix when checking
         List<GrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + role)
+                new SimpleGrantedAuthority("ROLE_" + role.getValue())
         );
 
         return new UserPrincipal(

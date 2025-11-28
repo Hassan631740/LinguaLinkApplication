@@ -1,5 +1,6 @@
 package com.lingualink.repository;
 
+import com.lingualink.entity.Role;
 import com.lingualink.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
            "(:role IS NULL OR u.role = :role)")
     Page<User> findByFilters(@Param("name") String name, 
                              @Param("email") String email, 
-                             @Param("role") String role, 
+                             @Param("role") Role role, 
                              Pageable pageable);
 }
 

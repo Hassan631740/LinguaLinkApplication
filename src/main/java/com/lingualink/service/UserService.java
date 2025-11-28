@@ -4,6 +4,7 @@ import com.lingualink.dto.PageParams;
 import com.lingualink.dto.PagedResponse;
 import com.lingualink.dto.request.UserRequest;
 import com.lingualink.dto.response.UserResponse;
+import com.lingualink.entity.Role;
 import com.lingualink.entity.User;
 import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.mapper.UserMapper;
@@ -74,14 +75,18 @@ public class UserService {
     @Transactional(readOnly = true)
     public PagedResponse<User> getAllUsersWithFilters(PageParams pageParams, String name, String email, String role) {
         Pageable pageable = pageParams.toPageable("id");
-        Page<User> page = userRepository.findByFilters(name, email, role, pageable);
+        // Convert String role to Role enum for query
+        Role roleEnum = role != null ? Role.fromString(role) : null;
+        Page<User> page = userRepository.findByFilters(name, email, roleEnum, pageable);
         return PagedResponse.of(page);
     }
 
     @Transactional(readOnly = true)
     public PagedResponse<UserResponse> getAllUsersWithFiltersAsResponse(PageParams pageParams, String name, String email, String role) {
         Pageable pageable = pageParams.toPageable("id");
-        Page<User> page = userRepository.findByFilters(name, email, role, pageable);
+        // Convert String role to Role enum for query
+        Role roleEnum = role != null ? Role.fromString(role) : null;
+        Page<User> page = userRepository.findByFilters(name, email, roleEnum, pageable);
         List<UserResponse> content = page.getContent().stream()
                 .map(userMapper::toResponse)
                 .collect(Collectors.toList());
@@ -116,7 +121,8 @@ public class UserService {
         
         // Only administrators can change roles
         if (userDetails.getRole() != null && !SecurityUtils.isAdministrator()) {
-            userDetails.setRole(user.getRole()); // Keep original role
+            // Keep original role - userDetails already has Role enum
+            userDetails.setRole(user.getRole());
         }
         
         // Check if email is being changed and if new email already exists
@@ -143,7 +149,8 @@ public class UserService {
         
         // Only administrators can change roles
         if (request.getRole() != null && !SecurityUtils.isAdministrator()) {
-            request.setRole(user.getRole()); // Keep original role
+            // Keep original role - convert Role enum to String
+            request.setRole(user.getRole() != null ? user.getRole().getValue() : null);
         }
         
         // Check if email is being changed and if new email already exists

@@ -2,6 +2,7 @@ package com.lingualink.mapper;
 
 import com.lingualink.dto.request.UserRequest;
 import com.lingualink.dto.response.UserResponse;
+import com.lingualink.entity.Role;
 import com.lingualink.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,8 @@ public class UserMapper {
         user.setName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
-        user.setRole(request.getRole());
+        // Convert String role from DTO to Role enum
+        user.setRole(request.getRole() != null ? Role.fromString(request.getRole()) : null);
         return user;
     }
 
@@ -28,7 +30,8 @@ public class UserMapper {
         response.setId(user.getId());
         response.setName(user.getName());
         response.setEmail(user.getEmail());
-        response.setRole(user.getRole());
+        // Convert Role enum to String for DTO
+        response.setRole(user.getRole() != null ? user.getRole().getValue() : null);
         response.setCreatedAt(user.getCreatedAt());
         response.setUpdatedAt(user.getUpdatedAt());
         return response;
@@ -48,7 +51,8 @@ public class UserMapper {
             user.setPassword(request.getPassword());
         }
         if (request.getRole() != null) {
-            user.setRole(request.getRole());
+            // Convert String role from DTO to Role enum
+            user.setRole(Role.fromString(request.getRole()));
         }
     }
 }
