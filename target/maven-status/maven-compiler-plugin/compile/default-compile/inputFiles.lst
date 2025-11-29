@@ -2,6 +2,7 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/CorsConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/DotEnvConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/JpaConfig.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/JwtConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/OpenApiConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/SecurityConfig.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/config/SecurityUtilsConfig.java
@@ -58,8 +59,7 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/ReviewRepository.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/repository/UserRepository.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/CustomUserDetailsService.java
-/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtAuthenticationFilter.java
-/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtTokenProvider.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/JwtTokenService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/SecurityUtils.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/security/UserPrincipal.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/BookingService.java
@@ -70,3 +70,4 @@
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/ReviewService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/service/UserService.java
 /Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/util/PaginationUtil.java
+/Users/hassankoroma/IdeaProjects/lingualink_starter/src/main/java/com/lingualink/util/PasswordHashGenerator.java

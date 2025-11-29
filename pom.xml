@@ -10,6 +10,9 @@
   <properties>
     <java.version>21</java.version>
     <spring.boot.version>3.3.2</spring.boot.version>
+    <maven.compiler.source>21</maven.compiler.source>
+    <maven.compiler.target>21</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <dependencyManagement>
@@ -103,11 +106,12 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Lombok (optional) -->
+    <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test -->
@@ -126,6 +130,12 @@
         <version>${spring.boot.version}</version>
         <configuration>
           <mainClass>com.lingualink.LinguaLinkApplication</mainClass>
+          <excludes>
+            <exclude>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+            </exclude>
+          </excludes>
         </configuration>
       </plugin>
       <plugin>
@@ -136,7 +146,18 @@
           <source>${java.version}</source>
           <target>${java.version}</target>
           <release>${java.version}</release>
+          <encoding>UTF-8</encoding>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
         </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.34</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>

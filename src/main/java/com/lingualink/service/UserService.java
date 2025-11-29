@@ -13,6 +13,7 @@ import com.lingualink.security.SecurityUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,16 +26,22 @@ import java.util.stream.Collectors;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Create
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("User with email " + user.getEmail() + " already exists");
+        }
+        // Encode password if it's raw (not already encoded)
+        if (user.getPassword() != null && !isPasswordEncoded(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
         return userRepository.save(user);
     }
@@ -44,6 +51,10 @@ public class UserService {
             throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists");
         }
         User user = userMapper.toEntity(request);
+        // Encode password before saving (passwords from UserRequest are always raw)
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
         User savedUser = userRepository.save(user);
         return userMapper.toResponse(savedUser);
     }
@@ -134,7 +145,11 @@ public class UserService {
         user.setName(userDetails.getName());
         user.setEmail(userDetails.getEmail());
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
-            user.setPassword(userDetails.getPassword());
+            // Encode password if it's raw (not already encoded)
+            String password = isPasswordEncoded(userDetails.getPassword()) 
+                    ? userDetails.getPassword() 
+                    : passwordEncoder.encode(userDetails.getPassword());
+            user.setPassword(password);
         }
         if (userDetails.getRole() != null && SecurityUtils.isAdministrator()) {
             user.setRole(userDetails.getRole());
@@ -160,6 +175,10 @@ public class UserService {
         }
         
         userMapper.updateEntityFromRequest(request, user);
+        // Encode password before saving if it was updated (passwords from UserRequest are always raw)
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
         User savedUser = userRepository.save(user);
         return userMapper.toResponse(savedUser);
     }
@@ -180,7 +199,11 @@ public class UserService {
             user.setEmail(userDetails.getEmail());
         }
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
-            user.setPassword(userDetails.getPassword());
+            // Encode password if it's raw (not already encoded)
+            String password = isPasswordEncoded(userDetails.getPassword()) 
+                    ? userDetails.getPassword() 
+                    : passwordEncoder.encode(userDetails.getPassword());
+            user.setPassword(password);
         }
         // Only administrators can change roles
         if (userDetails.getRole() != null && SecurityUtils.isAdministrator()) {
@@ -206,6 +229,10 @@ public class UserService {
         }
         
         userMapper.updateEntityFromRequest(request, user);
+        // Encode password before saving if it was updated (passwords from UserRequest are always raw)
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
         User savedUser = userRepository.save(user);
         return userMapper.toResponse(savedUser);
     }
@@ -236,6 +263,21 @@ public class UserService {
         if (!user.getId().equals(currentUserId)) {
             throw new AccessDeniedException("You do not have permission to access this user");
         }
+    }
+
+    /**
+     * Checks if a password is already encoded (BCrypt hash).
+     * BCrypt hashes start with "$2a$", "$2b$", or "$2y$" followed by cost and salt.
+     * 
+     * @param password the password to check
+     * @return true if the password appears to be already encoded, false otherwise
+     */
+    private boolean isPasswordEncoded(String password) {
+        if (password == null || password.isEmpty()) {
+            return false;
+        }
+        // BCrypt hashes start with $2a$, $2b$, or $2y$ and are typically 60 characters long
+        return password.startsWith("$2a$") || password.startsWith("$2b$") || password.startsWith("$2y$");
     }
 }
 

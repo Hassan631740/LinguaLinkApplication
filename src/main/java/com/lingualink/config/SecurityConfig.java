@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 
 @Configuration
 @EnableWebSecurity
@@ -28,7 +29,7 @@ public class SecurityConfig {
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final CorsConfigurationSource corsConfigurationSource;
 
-    public SecurityConfig(UserDetailsService userDetailsService,
+    public SecurityConfig(@Lazy UserDetailsService userDetailsService,
                          JwtDecoder jwtDecoder,
                          JwtAuthenticationConverter jwtAuthenticationConverter,
                          @Qualifier("corsConfigurationSource") CorsConfigurationSource corsConfigurationSource) {

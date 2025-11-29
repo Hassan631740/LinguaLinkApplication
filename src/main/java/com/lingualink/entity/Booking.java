@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "bookings")
@@ -26,7 +25,6 @@ public class Booking extends BaseEntity {
 
     private String status;
 
-    @CreationTimestamp
     @Column(name = "requested_at")
     private LocalDateTime requestedAt;
 
