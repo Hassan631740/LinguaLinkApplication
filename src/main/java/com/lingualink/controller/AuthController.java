@@ -5,6 +5,8 @@ import com.lingualink.dto.LoginRequest;
 import com.lingualink.dto.RegisterRequest;
 import com.lingualink.entity.Role;
 import com.lingualink.entity.User;
+import com.lingualink.exception.ResourceConflictException;
+import com.lingualink.exception.ResourceNotFoundException;
 import com.lingualink.security.JwtTokenService;
 import com.lingualink.security.UserPrincipal;
 import com.lingualink.service.UserService;
@@ -42,12 +44,10 @@ public class AuthController {
 
     @Operation(summary = "Register a new user", description = "Creates a new user account and returns a JWT token")
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<JwtAuthenticationResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         // Check if user already exists
         if (userService.existsByEmail(registerRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body("Error: Email is already in use!");
+            throw new ResourceConflictException("User", "email", registerRequest.getEmail());
         }
 
         // Create new user
@@ -70,6 +70,7 @@ public class AuthController {
         String jwt = tokenService.generateTokenFromUsername(savedUser.getEmail(), authorities);
 
         return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/users/" + savedUser.getId())
                 .body(new JwtAuthenticationResponse(jwt, savedUser.getEmail(), 
                         savedUser.getRole() != null ? savedUser.getRole().getValue() : null));
     }
@@ -92,7 +93,7 @@ public class AuthController {
 
         // Get user details
         User user = userService.getUserByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", loginRequest.getEmail()));
 
         return ResponseEntity.ok(new JwtAuthenticationResponse(jwt, user.getEmail(), 
                 user.getRole() != null ? user.getRole().getValue() : null));

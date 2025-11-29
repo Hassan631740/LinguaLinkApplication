@@ -43,7 +43,9 @@ public class UserController {
     })
     public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
         UserResponse createdUser = userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/users/" + createdUser.getId())
+                .body(createdUser);
     }
 
     @GetMapping

@@ -1,7 +1,8 @@
 package com.lingualink.controller;
 
 import com.lingualink.dto.PagedResponse;
-import com.lingualink.entity.Interpreter;
+import com.lingualink.dto.request.InterpreterRequest;
+import com.lingualink.dto.response.InterpreterResponse;
 import com.lingualink.service.InterpreterService;
 import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,9 +40,11 @@ public class InterpreterController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Interpreter> createInterpreter(@Valid @RequestBody Interpreter interpreter) {
-        Interpreter createdInterpreter = interpreterService.createInterpreter(interpreter);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdInterpreter);
+    public ResponseEntity<InterpreterResponse> createInterpreter(@Valid @RequestBody InterpreterRequest request) {
+        InterpreterResponse createdInterpreter = interpreterService.createInterpreter(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/interpreters/" + createdInterpreter.getId())
+                .body(createdInterpreter);
     }
 
     @GetMapping
@@ -63,12 +66,12 @@ public class InterpreterController {
         if (page != null || size != null || language != null || minRate != null || 
             maxRate != null || minExperience != null || maxExperience != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Interpreter> pagedResponse = interpreterService.getAllInterpretersWithFilters(
+            PagedResponse<InterpreterResponse> pagedResponse = interpreterService.getAllInterpretersWithFiltersAsResponse(
                     pageParams, language, minRate, maxRate, minExperience, maxExperience);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Interpreter> interpreters = interpreterService.getAllInterpreters();
+        List<InterpreterResponse> interpreters = interpreterService.getAllInterpretersAsResponse();
         return ResponseEntity.ok(interpreters);
     }
 
@@ -78,9 +81,9 @@ public class InterpreterController {
             @ApiResponse(responseCode = "200", description = "Interpreter found"),
             @ApiResponse(responseCode = "404", description = "Interpreter not found")
     })
-    public ResponseEntity<Interpreter> getInterpreterById(
+    public ResponseEntity<InterpreterResponse> getInterpreterById(
             @Parameter(description = "Interpreter ID") @PathVariable Long id) {
-        Interpreter interpreter = interpreterService.getInterpreterById(id);
+        InterpreterResponse interpreter = interpreterService.getInterpreterByIdAsResponse(id);
         return ResponseEntity.ok(interpreter);
     }
 
@@ -90,9 +93,9 @@ public class InterpreterController {
             @ApiResponse(responseCode = "200", description = "Interpreter found"),
             @ApiResponse(responseCode = "404", description = "Interpreter not found")
     })
-    public ResponseEntity<Interpreter> getInterpreterByUserId(
+    public ResponseEntity<InterpreterResponse> getInterpreterByUserId(
             @Parameter(description = "User ID") @PathVariable Long userId) {
-        Optional<Interpreter> interpreter = interpreterService.getInterpreterByUserId(userId);
+        Optional<InterpreterResponse> interpreter = interpreterService.getInterpreterByUserIdAsResponse(userId);
         return interpreter.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -106,10 +109,10 @@ public class InterpreterController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Interpreter> updateInterpreter(
+    public ResponseEntity<InterpreterResponse> updateInterpreter(
             @Parameter(description = "Interpreter ID") @PathVariable Long id,
-            @Valid @RequestBody Interpreter interpreterDetails) {
-        Interpreter updatedInterpreter = interpreterService.updateInterpreter(id, interpreterDetails);
+            @Valid @RequestBody InterpreterRequest request) {
+        InterpreterResponse updatedInterpreter = interpreterService.updateInterpreter(id, request);
         return ResponseEntity.ok(updatedInterpreter);
     }
 
@@ -122,10 +125,10 @@ public class InterpreterController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Interpreter> patchInterpreter(
+    public ResponseEntity<InterpreterResponse> patchInterpreter(
             @Parameter(description = "Interpreter ID") @PathVariable Long id,
-            @RequestBody Interpreter interpreterDetails) {
-        Interpreter updatedInterpreter = interpreterService.patchInterpreter(id, interpreterDetails);
+            @Valid @RequestBody InterpreterRequest request) {
+        InterpreterResponse updatedInterpreter = interpreterService.patchInterpreter(id, request);
         return ResponseEntity.ok(updatedInterpreter);
     }
 

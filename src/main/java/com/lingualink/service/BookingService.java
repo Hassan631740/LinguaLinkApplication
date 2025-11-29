@@ -2,9 +2,16 @@ package com.lingualink.service;
 
 import com.lingualink.dto.PageParams;
 import com.lingualink.dto.PagedResponse;
+import com.lingualink.dto.request.BookingRequest;
+import com.lingualink.dto.response.BookingResponse;
 import com.lingualink.entity.Booking;
+import com.lingualink.entity.Event;
+import com.lingualink.entity.Interpreter;
 import com.lingualink.exception.ResourceNotFoundException;
+import com.lingualink.mapper.BookingMapper;
 import com.lingualink.repository.BookingRepository;
+import com.lingualink.repository.EventRepository;
+import com.lingualink.repository.InterpreterRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -12,19 +19,41 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class BookingService {
     private final BookingRepository bookingRepository;
+    private final BookingMapper bookingMapper;
+    private final EventRepository eventRepository;
+    private final InterpreterRepository interpreterRepository;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, BookingMapper bookingMapper,
+                         EventRepository eventRepository, InterpreterRepository interpreterRepository) {
         this.bookingRepository = bookingRepository;
+        this.bookingMapper = bookingMapper;
+        this.eventRepository = eventRepository;
+        this.interpreterRepository = interpreterRepository;
     }
 
     // Create
     public Booking createBooking(Booking booking) {
         return bookingRepository.save(booking);
+    }
+
+    public BookingResponse createBooking(BookingRequest request) {
+        Event event = request.getEventId() != null
+                ? eventRepository.findById(request.getEventId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Event", "id", request.getEventId()))
+                : null;
+        Interpreter interpreter = request.getInterpreterId() != null
+                ? interpreterRepository.findById(request.getInterpreterId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Interpreter", "id", request.getInterpreterId()))
+                : null;
+        Booking booking = bookingMapper.toEntity(request, event, interpreter);
+        Booking savedBooking = bookingRepository.save(booking);
+        return bookingMapper.toResponse(savedBooking);
     }
 
     // Read
@@ -49,9 +78,35 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<BookingResponse> getAllBookingsWithFiltersAsResponse(PageParams pageParams, Long eventId, Long interpreterId, 
+                                                                              String status, BigDecimal minPrice, BigDecimal maxPrice) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByFilters(eventId, interpreterId, status, minPrice, maxPrice, pageable);
+        List<BookingResponse> content = page.getContent().stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+        return new PagedResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getAllBookingsAsResponse() {
+        List<Booking> bookings = getAllBookings();
+        return bookings.stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public Booking getBookingById(Long id) {
         return bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking", "id", id));
+    }
+
+    @Transactional(readOnly = true)
+    public BookingResponse getBookingByIdAsResponse(Long id) {
+        Booking booking = getBookingById(id);
+        return bookingMapper.toResponse(booking);
     }
 
     @Transactional(readOnly = true)
@@ -67,6 +122,25 @@ public class BookingService {
     }
 
     @Transactional(readOnly = true)
+    public PagedResponse<BookingResponse> getBookingsByEventIdAsResponse(Long eventId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByEvent_Id(eventId, pageable);
+        List<BookingResponse> content = page.getContent().stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+        return new PagedResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getBookingsByEventIdAsResponse(Long eventId) {
+        List<Booking> bookings = getBookingsByEventId(eventId);
+        return bookings.stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<Booking> getBookingsByInterpreterId(Long interpreterId) {
         return bookingRepository.findByInterpreter_Id(interpreterId);
     }
@@ -76,6 +150,25 @@ public class BookingService {
         Pageable pageable = pageParams.toPageable("requestedAt");
         Page<Booking> page = bookingRepository.findByInterpreter_Id(interpreterId, pageable);
         return PagedResponse.of(page);
+    }
+
+    @Transactional(readOnly = true)
+    public PagedResponse<BookingResponse> getBookingsByInterpreterIdAsResponse(Long interpreterId, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByInterpreter_Id(interpreterId, pageable);
+        List<BookingResponse> content = page.getContent().stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+        return new PagedResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getBookingsByInterpreterIdAsResponse(Long interpreterId) {
+        List<Booking> bookings = getBookingsByInterpreterId(interpreterId);
+        return bookings.stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -90,6 +183,25 @@ public class BookingService {
         return PagedResponse.of(page);
     }
 
+    @Transactional(readOnly = true)
+    public PagedResponse<BookingResponse> getBookingsByStatusAsResponse(String status, PageParams pageParams) {
+        Pageable pageable = pageParams.toPageable("requestedAt");
+        Page<Booking> page = bookingRepository.findByStatus(status, pageable);
+        List<BookingResponse> content = page.getContent().stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+        return new PagedResponse<>(content, page.getNumber(), page.getSize(),
+                page.getTotalElements(), page.getTotalPages(), page.isFirst(), page.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookingResponse> getBookingsByStatusAsResponse(String status) {
+        List<Booking> bookings = getBookingsByStatus(status);
+        return bookings.stream()
+                .map(bookingMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     // Update - Full update
     public Booking updateBooking(Long id, Booking bookingDetails) {
         Booking booking = getBookingById(id);
@@ -100,6 +212,21 @@ public class BookingService {
         booking.setPrice(bookingDetails.getPrice());
         booking.setPaymentId(bookingDetails.getPaymentId());
         return bookingRepository.save(booking);
+    }
+
+    public BookingResponse updateBooking(Long id, BookingRequest request) {
+        Booking booking = getBookingById(id);
+        Event event = request.getEventId() != null
+                ? eventRepository.findById(request.getEventId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Event", "id", request.getEventId()))
+                : booking.getEvent();
+        Interpreter interpreter = request.getInterpreterId() != null
+                ? interpreterRepository.findById(request.getInterpreterId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Interpreter", "id", request.getInterpreterId()))
+                : booking.getInterpreter();
+        bookingMapper.updateEntityFromRequest(request, booking, event, interpreter);
+        Booking savedBooking = bookingRepository.save(booking);
+        return bookingMapper.toResponse(savedBooking);
     }
 
     // Update - Partial update
@@ -125,6 +252,21 @@ public class BookingService {
             booking.setPaymentId(bookingDetails.getPaymentId());
         }
         return bookingRepository.save(booking);
+    }
+
+    public BookingResponse patchBooking(Long id, BookingRequest request) {
+        Booking booking = getBookingById(id);
+        Event event = request.getEventId() != null
+                ? eventRepository.findById(request.getEventId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Event", "id", request.getEventId()))
+                : null;
+        Interpreter interpreter = request.getInterpreterId() != null
+                ? interpreterRepository.findById(request.getInterpreterId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Interpreter", "id", request.getInterpreterId()))
+                : null;
+        bookingMapper.updateEntityFromRequest(request, booking, event, interpreter);
+        Booking savedBooking = bookingRepository.save(booking);
+        return bookingMapper.toResponse(savedBooking);
     }
 
     // Delete

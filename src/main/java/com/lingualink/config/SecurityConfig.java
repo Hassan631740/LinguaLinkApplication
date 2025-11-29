@@ -82,6 +82,8 @@ public class SecurityConfig {
                                "/swagger-resources/**", "/webjars/**", "/swagger-ui/index.html").permitAll()
                 // Health check endpoints (if needed)
                 .requestMatchers("/actuator/health", "/health").permitAll()
+                // WebSocket handshake endpoint (authentication handled by JwtWebSocketHandshakeInterceptor)
+                .requestMatchers("/ws/**").permitAll()
                 // Administrator-only endpoints
                 .requestMatchers("/api/users/**").hasAnyRole("ADMINISTRATOR", "CLIENT", "INTERPRETER")
                 // Method-level security will handle fine-grained access control

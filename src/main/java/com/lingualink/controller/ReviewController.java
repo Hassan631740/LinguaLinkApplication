@@ -1,7 +1,8 @@
 package com.lingualink.controller;
 
 import com.lingualink.dto.PagedResponse;
-import com.lingualink.entity.Review;
+import com.lingualink.dto.request.ReviewRequest;
+import com.lingualink.dto.response.ReviewResponse;
 import com.lingualink.service.ReviewService;
 import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,9 +38,11 @@ public class ReviewController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Review> createReview(@Valid @RequestBody Review review) {
-        Review createdReview = reviewService.createReview(review);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdReview);
+    public ResponseEntity<ReviewResponse> createReview(@Valid @RequestBody ReviewRequest request) {
+        ReviewResponse createdReview = reviewService.createReview(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/reviews/" + createdReview.getId())
+                .body(createdReview);
     }
 
     @GetMapping
@@ -61,12 +64,12 @@ public class ReviewController {
         if (page != null || size != null || bookingId != null || reviewerId != null || 
             minRating != null || maxRating != null || comment != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Review> pagedResponse = reviewService.getAllReviewsWithFilters(
+            PagedResponse<ReviewResponse> pagedResponse = reviewService.getAllReviewsWithFiltersAsResponse(
                     pageParams, bookingId, reviewerId, minRating, maxRating, comment);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Review> reviews = reviewService.getAllReviews();
+        List<ReviewResponse> reviews = reviewService.getAllReviewsAsResponse();
         return ResponseEntity.ok(reviews);
     }
 
@@ -76,9 +79,9 @@ public class ReviewController {
             @ApiResponse(responseCode = "200", description = "Review found"),
             @ApiResponse(responseCode = "404", description = "Review not found")
     })
-    public ResponseEntity<Review> getReviewById(
+    public ResponseEntity<ReviewResponse> getReviewById(
             @Parameter(description = "Review ID") @PathVariable Long id) {
-        Review review = reviewService.getReviewById(id);
+        ReviewResponse review = reviewService.getReviewByIdAsResponse(id);
         return ResponseEntity.ok(review);
     }
 
@@ -94,11 +97,11 @@ public class ReviewController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Review> pagedResponse = reviewService.getReviewsByBookingId(bookingId, pageParams);
+            PagedResponse<ReviewResponse> pagedResponse = reviewService.getReviewsByBookingIdAsResponse(bookingId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Review> reviews = reviewService.getReviewsByBookingId(bookingId);
+        List<ReviewResponse> reviews = reviewService.getReviewsByBookingIdAsResponse(bookingId);
         return ResponseEntity.ok(reviews);
     }
 
@@ -114,11 +117,11 @@ public class ReviewController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Review> pagedResponse = reviewService.getReviewsByReviewerId(reviewerId, pageParams);
+            PagedResponse<ReviewResponse> pagedResponse = reviewService.getReviewsByReviewerIdAsResponse(reviewerId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Review> reviews = reviewService.getReviewsByReviewerId(reviewerId);
+        List<ReviewResponse> reviews = reviewService.getReviewsByReviewerIdAsResponse(reviewerId);
         return ResponseEntity.ok(reviews);
     }
 
@@ -131,10 +134,10 @@ public class ReviewController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Review> updateReview(
+    public ResponseEntity<ReviewResponse> updateReview(
             @Parameter(description = "Review ID") @PathVariable Long id,
-            @Valid @RequestBody Review reviewDetails) {
-        Review updatedReview = reviewService.updateReview(id, reviewDetails);
+            @Valid @RequestBody ReviewRequest request) {
+        ReviewResponse updatedReview = reviewService.updateReview(id, request);
         return ResponseEntity.ok(updatedReview);
     }
 
@@ -147,10 +150,10 @@ public class ReviewController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Review> patchReview(
+    public ResponseEntity<ReviewResponse> patchReview(
             @Parameter(description = "Review ID") @PathVariable Long id,
-            @RequestBody Review reviewDetails) {
-        Review updatedReview = reviewService.patchReview(id, reviewDetails);
+            @Valid @RequestBody ReviewRequest request) {
+        ReviewResponse updatedReview = reviewService.patchReview(id, request);
         return ResponseEntity.ok(updatedReview);
     }
 

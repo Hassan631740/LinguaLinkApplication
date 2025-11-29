@@ -1,7 +1,8 @@
 package com.lingualink.controller;
 
 import com.lingualink.dto.PagedResponse;
-import com.lingualink.entity.Booking;
+import com.lingualink.dto.request.BookingRequest;
+import com.lingualink.dto.response.BookingResponse;
 import com.lingualink.service.BookingService;
 import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,9 +39,11 @@ public class BookingController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Booking> createBooking(@Valid @RequestBody Booking booking) {
-        Booking createdBooking = bookingService.createBooking(booking);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
+    public ResponseEntity<BookingResponse> createBooking(@Valid @RequestBody BookingRequest request) {
+        BookingResponse createdBooking = bookingService.createBooking(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/bookings/" + createdBooking.getId())
+                .body(createdBooking);
     }
 
     @GetMapping
@@ -62,12 +65,12 @@ public class BookingController {
         if (page != null || size != null || eventId != null || interpreterId != null || 
             status != null || minPrice != null || maxPrice != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Booking> pagedResponse = bookingService.getAllBookingsWithFilters(
+            PagedResponse<BookingResponse> pagedResponse = bookingService.getAllBookingsWithFiltersAsResponse(
                     pageParams, eventId, interpreterId, status, minPrice, maxPrice);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Booking> bookings = bookingService.getAllBookings();
+        List<BookingResponse> bookings = bookingService.getAllBookingsAsResponse();
         return ResponseEntity.ok(bookings);
     }
 
@@ -77,9 +80,9 @@ public class BookingController {
             @ApiResponse(responseCode = "200", description = "Booking found"),
             @ApiResponse(responseCode = "404", description = "Booking not found")
     })
-    public ResponseEntity<Booking> getBookingById(
+    public ResponseEntity<BookingResponse> getBookingById(
             @Parameter(description = "Booking ID") @PathVariable Long id) {
-        Booking booking = bookingService.getBookingById(id);
+        BookingResponse booking = bookingService.getBookingByIdAsResponse(id);
         return ResponseEntity.ok(booking);
     }
 
@@ -95,11 +98,11 @@ public class BookingController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Booking> pagedResponse = bookingService.getBookingsByEventId(eventId, pageParams);
+            PagedResponse<BookingResponse> pagedResponse = bookingService.getBookingsByEventIdAsResponse(eventId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Booking> bookings = bookingService.getBookingsByEventId(eventId);
+        List<BookingResponse> bookings = bookingService.getBookingsByEventIdAsResponse(eventId);
         return ResponseEntity.ok(bookings);
     }
 
@@ -115,11 +118,11 @@ public class BookingController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Booking> pagedResponse = bookingService.getBookingsByInterpreterId(interpreterId, pageParams);
+            PagedResponse<BookingResponse> pagedResponse = bookingService.getBookingsByInterpreterIdAsResponse(interpreterId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Booking> bookings = bookingService.getBookingsByInterpreterId(interpreterId);
+        List<BookingResponse> bookings = bookingService.getBookingsByInterpreterIdAsResponse(interpreterId);
         return ResponseEntity.ok(bookings);
     }
 
@@ -135,11 +138,11 @@ public class BookingController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Booking> pagedResponse = bookingService.getBookingsByStatus(status, pageParams);
+            PagedResponse<BookingResponse> pagedResponse = bookingService.getBookingsByStatusAsResponse(status, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Booking> bookings = bookingService.getBookingsByStatus(status);
+        List<BookingResponse> bookings = bookingService.getBookingsByStatusAsResponse(status);
         return ResponseEntity.ok(bookings);
     }
 
@@ -152,10 +155,10 @@ public class BookingController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Booking> updateBooking(
+    public ResponseEntity<BookingResponse> updateBooking(
             @Parameter(description = "Booking ID") @PathVariable Long id,
-            @Valid @RequestBody Booking bookingDetails) {
-        Booking updatedBooking = bookingService.updateBooking(id, bookingDetails);
+            @Valid @RequestBody BookingRequest request) {
+        BookingResponse updatedBooking = bookingService.updateBooking(id, request);
         return ResponseEntity.ok(updatedBooking);
     }
 
@@ -168,10 +171,10 @@ public class BookingController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Booking> patchBooking(
+    public ResponseEntity<BookingResponse> patchBooking(
             @Parameter(description = "Booking ID") @PathVariable Long id,
-            @RequestBody Booking bookingDetails) {
-        Booking updatedBooking = bookingService.patchBooking(id, bookingDetails);
+            @Valid @RequestBody BookingRequest request) {
+        BookingResponse updatedBooking = bookingService.patchBooking(id, request);
         return ResponseEntity.ok(updatedBooking);
     }
 

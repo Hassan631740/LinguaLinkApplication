@@ -1,7 +1,8 @@
 package com.lingualink.controller;
 
 import com.lingualink.dto.PagedResponse;
-import com.lingualink.entity.Message;
+import com.lingualink.dto.request.MessageRequest;
+import com.lingualink.dto.response.MessageResponse;
 import com.lingualink.service.MessageService;
 import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,9 +40,11 @@ public class MessageController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Message> createMessage(@Valid @RequestBody Message message) {
-        Message createdMessage = messageService.createMessage(message);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdMessage);
+    public ResponseEntity<MessageResponse> createMessage(@Valid @RequestBody MessageRequest request) {
+        MessageResponse createdMessage = messageService.createMessage(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/messages/" + createdMessage.getId())
+                .body(createdMessage);
     }
 
     @GetMapping
@@ -64,12 +67,12 @@ public class MessageController {
         if (page != null || size != null || bookingId != null || senderId != null || 
             receiverId != null || content != null || sentFrom != null || sentTo != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Message> pagedResponse = messageService.getAllMessagesWithFilters(
+            PagedResponse<MessageResponse> pagedResponse = messageService.getAllMessagesWithFiltersAsResponse(
                     pageParams, bookingId, senderId, receiverId, content, sentFrom, sentTo);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Message> messages = messageService.getAllMessages();
+        List<MessageResponse> messages = messageService.getAllMessagesAsResponse();
         return ResponseEntity.ok(messages);
     }
 
@@ -79,9 +82,9 @@ public class MessageController {
             @ApiResponse(responseCode = "200", description = "Message found"),
             @ApiResponse(responseCode = "404", description = "Message not found")
     })
-    public ResponseEntity<Message> getMessageById(
+    public ResponseEntity<MessageResponse> getMessageById(
             @Parameter(description = "Message ID") @PathVariable Long id) {
-        Message message = messageService.getMessageById(id);
+        MessageResponse message = messageService.getMessageByIdAsResponse(id);
         return ResponseEntity.ok(message);
     }
 
@@ -97,11 +100,11 @@ public class MessageController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Message> pagedResponse = messageService.getMessagesByBookingId(bookingId, pageParams);
+            PagedResponse<MessageResponse> pagedResponse = messageService.getMessagesByBookingIdAsResponse(bookingId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Message> messages = messageService.getMessagesByBookingId(bookingId);
+        List<MessageResponse> messages = messageService.getMessagesByBookingIdAsResponse(bookingId);
         return ResponseEntity.ok(messages);
     }
 
@@ -118,11 +121,11 @@ public class MessageController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Message> pagedResponse = messageService.getMessagesBySenderAndReceiver(senderId, receiverId, pageParams);
+            PagedResponse<MessageResponse> pagedResponse = messageService.getMessagesBySenderAndReceiverAsResponse(senderId, receiverId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Message> messages = messageService.getMessagesBySenderAndReceiver(senderId, receiverId);
+        List<MessageResponse> messages = messageService.getMessagesBySenderAndReceiverAsResponse(senderId, receiverId);
         return ResponseEntity.ok(messages);
     }
 
@@ -135,10 +138,10 @@ public class MessageController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Message> updateMessage(
+    public ResponseEntity<MessageResponse> updateMessage(
             @Parameter(description = "Message ID") @PathVariable Long id,
-            @Valid @RequestBody Message messageDetails) {
-        Message updatedMessage = messageService.updateMessage(id, messageDetails);
+            @Valid @RequestBody MessageRequest request) {
+        MessageResponse updatedMessage = messageService.updateMessage(id, request);
         return ResponseEntity.ok(updatedMessage);
     }
 
@@ -151,10 +154,10 @@ public class MessageController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Message> patchMessage(
+    public ResponseEntity<MessageResponse> patchMessage(
             @Parameter(description = "Message ID") @PathVariable Long id,
-            @RequestBody Message messageDetails) {
-        Message updatedMessage = messageService.patchMessage(id, messageDetails);
+            @Valid @RequestBody MessageRequest request) {
+        MessageResponse updatedMessage = messageService.patchMessage(id, request);
         return ResponseEntity.ok(updatedMessage);
     }
 

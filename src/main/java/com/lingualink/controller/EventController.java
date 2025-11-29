@@ -1,7 +1,8 @@
 package com.lingualink.controller;
 
 import com.lingualink.dto.PagedResponse;
-import com.lingualink.entity.Event;
+import com.lingualink.dto.request.EventRequest;
+import com.lingualink.dto.response.EventResponse;
 import com.lingualink.service.EventService;
 import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,9 +40,11 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Event> createEvent(@Valid @RequestBody Event event) {
-        Event createdEvent = eventService.createEvent(event);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
+    public ResponseEntity<EventResponse> createEvent(@Valid @RequestBody EventRequest request) {
+        EventResponse createdEvent = eventService.createEvent(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/events/" + createdEvent.getId())
+                .body(createdEvent);
     }
 
     @GetMapping
@@ -65,13 +68,13 @@ public class EventController {
         if (page != null || size != null || organizerId != null || language != null || 
             title != null || location != null || startDateFrom != null || startDateTo != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Event> pagedResponse = eventService.getAllEventsWithFilters(
+            PagedResponse<EventResponse> pagedResponse = eventService.getAllEventsWithFiltersAsResponse(
                     pageParams, organizerId, language, title, location, startDateFrom, startDateTo);
             return ResponseEntity.ok(pagedResponse);
         }
         
         // Otherwise, return simple list for backward compatibility
-        List<Event> events = eventService.getAllEvents();
+        List<EventResponse> events = eventService.getAllEventsAsResponse();
         return ResponseEntity.ok(events);
     }
 
@@ -81,9 +84,9 @@ public class EventController {
             @ApiResponse(responseCode = "200", description = "Event found"),
             @ApiResponse(responseCode = "404", description = "Event not found")
     })
-    public ResponseEntity<Event> getEventById(
+    public ResponseEntity<EventResponse> getEventById(
             @Parameter(description = "Event ID") @PathVariable Long id) {
-        Event event = eventService.getEventById(id);
+        EventResponse event = eventService.getEventByIdAsResponse(id);
         return ResponseEntity.ok(event);
     }
 
@@ -99,11 +102,11 @@ public class EventController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Event> pagedResponse = eventService.getEventsByOrganizerId(organizerId, pageParams);
+            PagedResponse<EventResponse> pagedResponse = eventService.getEventsByOrganizerIdAsResponse(organizerId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Event> events = eventService.getEventsByOrganizerId(organizerId);
+        List<EventResponse> events = eventService.getEventsByOrganizerIdAsResponse(organizerId);
         return ResponseEntity.ok(events);
     }
 
@@ -119,11 +122,11 @@ public class EventController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Event> pagedResponse = eventService.getEventsByLanguage(language, pageParams);
+            PagedResponse<EventResponse> pagedResponse = eventService.getEventsByLanguageAsResponse(language, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Event> events = eventService.getEventsByLanguage(language);
+        List<EventResponse> events = eventService.getEventsByLanguageAsResponse(language);
         return ResponseEntity.ok(events);
     }
 
@@ -136,10 +139,10 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Event> updateEvent(
+    public ResponseEntity<EventResponse> updateEvent(
             @Parameter(description = "Event ID") @PathVariable Long id,
-            @Valid @RequestBody Event eventDetails) {
-        Event updatedEvent = eventService.updateEvent(id, eventDetails);
+            @Valid @RequestBody EventRequest request) {
+        EventResponse updatedEvent = eventService.updateEvent(id, request);
         return ResponseEntity.ok(updatedEvent);
     }
 
@@ -152,10 +155,10 @@ public class EventController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Event> patchEvent(
+    public ResponseEntity<EventResponse> patchEvent(
             @Parameter(description = "Event ID") @PathVariable Long id,
-            @RequestBody Event eventDetails) {
-        Event updatedEvent = eventService.patchEvent(id, eventDetails);
+            @Valid @RequestBody EventRequest request) {
+        EventResponse updatedEvent = eventService.patchEvent(id, request);
         return ResponseEntity.ok(updatedEvent);
     }
 

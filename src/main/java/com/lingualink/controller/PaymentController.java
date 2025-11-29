@@ -1,7 +1,8 @@
 package com.lingualink.controller;
 
 import com.lingualink.dto.PagedResponse;
-import com.lingualink.entity.Payment;
+import com.lingualink.dto.request.PaymentRequest;
+import com.lingualink.dto.response.PaymentResponse;
 import com.lingualink.service.PaymentService;
 import com.lingualink.util.PaginationUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -40,9 +41,11 @@ public class PaymentController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Payment> createPayment(@Valid @RequestBody Payment payment) {
-        Payment createdPayment = paymentService.createPayment(payment);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdPayment);
+    public ResponseEntity<PaymentResponse> createPayment(@Valid @RequestBody PaymentRequest request) {
+        PaymentResponse createdPayment = paymentService.createPayment(request);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .header("Location", "/api/payments/" + createdPayment.getId())
+                .body(createdPayment);
     }
 
     @GetMapping
@@ -68,12 +71,12 @@ public class PaymentController {
             currency != null || method != null || minAmount != null || maxAmount != null || 
             paidFrom != null || paidTo != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Payment> pagedResponse = paymentService.getAllPaymentsWithFilters(
+            PagedResponse<PaymentResponse> pagedResponse = paymentService.getAllPaymentsWithFiltersAsResponse(
                     pageParams, bookingId, status, currency, method, minAmount, maxAmount, paidFrom, paidTo);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Payment> payments = paymentService.getAllPayments();
+        List<PaymentResponse> payments = paymentService.getAllPaymentsAsResponse();
         return ResponseEntity.ok(payments);
     }
 
@@ -83,9 +86,9 @@ public class PaymentController {
             @ApiResponse(responseCode = "200", description = "Payment found"),
             @ApiResponse(responseCode = "404", description = "Payment not found")
     })
-    public ResponseEntity<Payment> getPaymentById(
+    public ResponseEntity<PaymentResponse> getPaymentById(
             @Parameter(description = "Payment ID") @PathVariable Long id) {
-        Payment payment = paymentService.getPaymentById(id);
+        PaymentResponse payment = paymentService.getPaymentByIdAsResponse(id);
         return ResponseEntity.ok(payment);
     }
 
@@ -101,11 +104,11 @@ public class PaymentController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Payment> pagedResponse = paymentService.getPaymentsByBookingId(bookingId, pageParams);
+            PagedResponse<PaymentResponse> pagedResponse = paymentService.getPaymentsByBookingIdAsResponse(bookingId, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Payment> payments = paymentService.getPaymentsByBookingId(bookingId);
+        List<PaymentResponse> payments = paymentService.getPaymentsByBookingIdAsResponse(bookingId);
         return ResponseEntity.ok(payments);
     }
 
@@ -121,11 +124,11 @@ public class PaymentController {
         
         if (page != null || size != null) {
             var pageParams = PaginationUtil.parsePageParams(page, size, sortBy, sortDir);
-            PagedResponse<Payment> pagedResponse = paymentService.getPaymentsByStatus(status, pageParams);
+            PagedResponse<PaymentResponse> pagedResponse = paymentService.getPaymentsByStatusAsResponse(status, pageParams);
             return ResponseEntity.ok(pagedResponse);
         }
         
-        List<Payment> payments = paymentService.getPaymentsByStatus(status);
+        List<PaymentResponse> payments = paymentService.getPaymentsByStatusAsResponse(status);
         return ResponseEntity.ok(payments);
     }
 
@@ -138,10 +141,10 @@ public class PaymentController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Payment> updatePayment(
+    public ResponseEntity<PaymentResponse> updatePayment(
             @Parameter(description = "Payment ID") @PathVariable Long id,
-            @Valid @RequestBody Payment paymentDetails) {
-        Payment updatedPayment = paymentService.updatePayment(id, paymentDetails);
+            @Valid @RequestBody PaymentRequest request) {
+        PaymentResponse updatedPayment = paymentService.updatePayment(id, request);
         return ResponseEntity.ok(updatedPayment);
     }
 
@@ -154,10 +157,10 @@ public class PaymentController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    public ResponseEntity<Payment> patchPayment(
+    public ResponseEntity<PaymentResponse> patchPayment(
             @Parameter(description = "Payment ID") @PathVariable Long id,
-            @RequestBody Payment paymentDetails) {
-        Payment updatedPayment = paymentService.patchPayment(id, paymentDetails);
+            @Valid @RequestBody PaymentRequest request) {
+        PaymentResponse updatedPayment = paymentService.patchPayment(id, request);
         return ResponseEntity.ok(updatedPayment);
     }
 
