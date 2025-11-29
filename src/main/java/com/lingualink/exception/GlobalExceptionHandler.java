@@ -72,6 +72,40 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle insufficient balance exceptions (402 - Payment Required)
+     */
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientBalanceException(
+            InsufficientBalanceException ex, HttpServletRequest request) {
+        log.warn("Insufficient balance: {}", ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.PAYMENT_REQUIRED.value())
+                .error("Insufficient Balance")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(errorResponse);
+    }
+
+    /**
+     * Handle file upload exceptions (400)
+     */
+    @ExceptionHandler(FileUploadException.class)
+    public ResponseEntity<ErrorResponse> handleFileUploadException(
+            FileUploadException ex, HttpServletRequest request) {
+        log.warn("File upload error for path {}: {}", request.getRequestURI(), ex.getMessage());
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("File Upload Error")
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    /**
      * Handle validation exceptions for @Valid annotated request bodies (400)
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)

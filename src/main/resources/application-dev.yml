@@ -61,3 +61,10 @@ logging:
     org.springframework.web: INFO
     org.springframework.security: WARN
 
+# File Storage Configuration (Dev - local file system)
+storage:
+  type: local
+  local:
+    base-path: uploads
+    base-url: ${STORAGE_BASE_URL:http://dev.lingualink.example.com/uploads}
+

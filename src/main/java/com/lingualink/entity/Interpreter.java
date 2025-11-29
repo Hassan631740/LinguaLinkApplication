@@ -29,4 +29,11 @@ public class Interpreter extends BaseEntity {
 
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    /**
+     * JSON array of certificate file URLs
+     * Example: ["/uploads/certificates/cert1.pdf", "/uploads/certificates/cert2.pdf"]
+     */
+    @Column(name = "certificate_urls", columnDefinition = "json")
+    private String certificateUrls;
 }

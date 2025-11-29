@@ -28,13 +28,16 @@ public class BookingService {
     private final BookingMapper bookingMapper;
     private final EventRepository eventRepository;
     private final InterpreterRepository interpreterRepository;
+    private final TransactionService transactionService;
 
     public BookingService(BookingRepository bookingRepository, BookingMapper bookingMapper,
-                         EventRepository eventRepository, InterpreterRepository interpreterRepository) {
+                         EventRepository eventRepository, InterpreterRepository interpreterRepository,
+                         TransactionService transactionService) {
         this.bookingRepository = bookingRepository;
         this.bookingMapper = bookingMapper;
         this.eventRepository = eventRepository;
         this.interpreterRepository = interpreterRepository;
+        this.transactionService = transactionService;
     }
 
     // Create
@@ -273,6 +276,94 @@ public class BookingService {
     public void deleteBooking(Long id) {
         Booking booking = getBookingById(id);
         bookingRepository.delete(booking);
+    }
+
+    /**
+     * Complete a booking: deduct balance from client and record earnings for interpreter
+     * This should be called after a call is completed
+     */
+    public BookingResponse completeBooking(Long bookingId) {
+        Booking booking = getBookingById(bookingId);
+
+        if (booking.getPrice() == null || booking.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Booking price must be set and greater than zero");
+        }
+
+        if (booking.getStatus() != null && "COMPLETED".equalsIgnoreCase(booking.getStatus())) {
+            throw new IllegalArgumentException("Booking is already completed");
+        }
+
+        // Deduct balance from client
+        transactionService.deductBalance(
+                bookingId,
+                booking.getPrice(),
+                "USD" // Default currency, can be made configurable
+        );
+
+        // Record earnings for interpreter (80% of booking price, adjust as needed)
+        BigDecimal interpreterEarning = booking.getPrice().multiply(new BigDecimal("0.80"));
+        transactionService.recordEarning(
+                bookingId,
+                interpreterEarning,
+                "USD"
+        );
+
+        // Update booking status
+        booking.setStatus("COMPLETED");
+        if (booking.getConfirmedAt() == null) {
+            booking.setConfirmedAt(java.time.LocalDateTime.now());
+        }
+        Booking savedBooking = bookingRepository.save(booking);
+
+        return bookingMapper.toResponse(savedBooking);
+    }
+
+    /**
+     * Complete a booking with custom duration (for calculating price based on actual call duration)
+     * This is useful when the actual call duration differs from the booked duration
+     */
+    public BookingResponse completeBooking(Long bookingId, BigDecimal actualAmount, BigDecimal interpreterEarning) {
+        Booking booking = getBookingById(bookingId);
+
+        if (actualAmount == null || actualAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Actual amount must be greater than zero");
+        }
+
+        if (interpreterEarning == null || interpreterEarning.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Interpreter earning must be greater than zero");
+        }
+
+        if (interpreterEarning.compareTo(actualAmount) > 0) {
+            throw new IllegalArgumentException("Interpreter earning cannot exceed actual amount");
+        }
+
+        if (booking.getStatus() != null && "COMPLETED".equalsIgnoreCase(booking.getStatus())) {
+            throw new IllegalArgumentException("Booking is already completed");
+        }
+
+        // Deduct balance from client
+        transactionService.deductBalance(
+                bookingId,
+                actualAmount,
+                "USD"
+        );
+
+        // Record earnings for interpreter
+        transactionService.recordEarning(
+                bookingId,
+                interpreterEarning,
+                "USD"
+        );
+
+        // Update booking status and price
+        booking.setPrice(actualAmount);
+        booking.setStatus("COMPLETED");
+        if (booking.getConfirmedAt() == null) {
+            booking.setConfirmedAt(java.time.LocalDateTime.now());
+        }
+        Booking savedBooking = bookingRepository.save(booking);
+
+        return bookingMapper.toResponse(savedBooking);
     }
 }
 

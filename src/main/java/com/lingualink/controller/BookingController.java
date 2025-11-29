@@ -178,6 +178,22 @@ public class BookingController {
         return ResponseEntity.ok(updatedBooking);
     }
 
+    @PostMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('CLIENT', 'INTERPRETER', 'ADMINISTRATOR')")
+    @Operation(summary = "Complete booking", description = "Complete a booking after call ends. Deducts balance from client and records earnings for interpreter.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Booking completed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid booking state or insufficient balance"),
+            @ApiResponse(responseCode = "402", description = "Insufficient balance"),
+            @ApiResponse(responseCode = "403", description = "Access denied"),
+            @ApiResponse(responseCode = "404", description = "Booking not found")
+    })
+    public ResponseEntity<BookingResponse> completeBooking(
+            @Parameter(description = "Booking ID") @PathVariable Long id) {
+        BookingResponse completedBooking = bookingService.completeBooking(id);
+        return ResponseEntity.ok(completedBooking);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('CLIENT', 'ADMINISTRATOR')")
     @Operation(summary = "Delete booking", description = "Deletes a booking by its ID. Clients can delete their own bookings, administrators can delete any booking.")

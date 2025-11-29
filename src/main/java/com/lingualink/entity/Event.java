@@ -30,5 +30,11 @@ public class Event extends BaseEntity {
     private LocalDateTime endDatetime;
     private String location;
     private String language;
+
+    /**
+     * URL to event's theme icon/image
+     */
+    @Column(name = "icon_url")
+    private String iconUrl;
 }
 

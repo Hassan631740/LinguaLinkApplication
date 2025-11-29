@@ -84,8 +84,12 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/health").permitAll()
                 // WebSocket handshake endpoint (authentication handled by JwtWebSocketHandshakeInterceptor)
                 .requestMatchers("/ws/**").permitAll()
+                // Uploaded files (for local storage - public access)
+                .requestMatchers("/uploads/**").permitAll()
                 // Administrator-only endpoints
                 .requestMatchers("/api/users/**").hasAnyRole("ADMINISTRATOR", "CLIENT", "INTERPRETER")
+                // Call records endpoints - accessible by CLIENT, INTERPRETER, and ADMINISTRATOR
+                .requestMatchers("/api/calls/**").hasAnyRole("CLIENT", "INTERPRETER", "ADMINISTRATOR")
                 // Method-level security will handle fine-grained access control
                 // All other requests require authentication
                 .anyRequest().authenticated()
